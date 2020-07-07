@@ -90,7 +90,9 @@ const addTutorial = async (req, res) => {
     try {
         const foundTutorial = await Tutorial.findById(tutorialId);
         if (!foundTutorial) return res.status(404).json({ error: "Tutorial not found" });
-        const user = await User.findOneAndUpdate({ _id: id }, { $push: { savedTutorials: tutorialId } });
+        const user = await User.findOneAndUpdate({ _id: id }, { $push: { savedTutorials: tutorialId } }).populate(
+            "savedTutorials"
+        );
         return res.status(200).json(user.transform());
     } catch (error) {
         return res.status(500).json(error);
