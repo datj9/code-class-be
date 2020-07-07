@@ -5,6 +5,8 @@ const isEmail = require("validator/lib/isEmail");
 const { User } = require("../../../models/User");
 const { promisify } = require("util");
 const { secretKey } = require("../../../config");
+const { Tutorial } = require("../../../models/Tutorial");
+const ObjectId = require("mongoose").Types.ObjectId;
 
 const hashPass = promisify(bcrypt.hash);
 
@@ -47,8 +49,8 @@ const signUp = async (req, res) => {
             password: hash,
         });
         await newUser.save();
-        const { id, userType, saveTutorials } = newUser;
-        const token = await createToken({ id, email, name, userType, saveTutorials });
+        const { id, userType, savedTutorials } = newUser;
+        const token = await createToken({ id, email, name, userType, savedTutorials });
         return res.status(201).json({ token });
     } catch (error) {
         res.status(400).json({ error });
@@ -64,7 +66,7 @@ const signIn = async (req, res) => {
     }
     if (Object.keys(errors).length) return res.status(500).json(errors);
 
-    let user = await User.findOne({ email });
+    let user = await User.findOne({ email }).populate("savedTutorials");
     if (!user) return res.status(500).json({ email: "Email does not exist" });
 
     const isMatch = await bcrypt.compare(password, user.password);
@@ -79,4 +81,20 @@ const signIn = async (req, res) => {
     });
 };
 
-module.exports = { signIn, signUp };
+const addTutorial = async (req, res) => {
+    const { tutorialId } = req.query;
+    const { id } = req.user;
+
+    if (!ObjectId.isValid(tutorialId)) return res.status(400).json({ error: "tutorialId is invalid" });
+
+    try {
+        const foundTutorial = await Tutorial.findById(tutorialId);
+        if (!foundTutorial) return res.status(404).json({ error: "Tutorial not found" });
+        const user = await User.findOneAndUpdate({ _id: id }, { $push: { savedTutorials: tutorialId } });
+        return res.status(200).json(user.transform());
+    } catch (error) {
+        return res.status(500).json(error);
+    }
+};
+
+module.exports = { signIn, signUp, addTutorial };

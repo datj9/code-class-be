@@ -1,5 +1,6 @@
 const { Tutorial } = require("../../../models/Tutorial");
 const isURL = require("validator/lib/isURL");
+const ObjectId = require("mongoose").Types.ObjectId;
 
 const getTutorials = async (req, res) => {
     try {
@@ -87,9 +88,24 @@ const updateTutorial = async (req, res) => {
     }
 };
 
+const deleteTutorial = async (req, res) => {
+    const { tutorialId } = req.params;
+    if (!ObjectId.isValid(tutorialId)) return res.status(400).json({ error: "tutorialId is invalid" });
+
+    try {
+        const tutorial = await Tutorial.findById(tutorialId);
+        if (!tutorial) return res.status(400).json({ error: "Tutorial not found" });
+        await Tutorial.deleteOne({ _id: tutorialId });
+        return res.status(200).json({ message: "Deleted successfully" });
+    } catch (error) {
+        return res.status(500).json(error);
+    }
+};
+
 module.exports = {
     getTutorials,
     getTutorialById,
     createTutorial,
     updateTutorial,
+    deleteTutorial,
 };
