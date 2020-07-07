@@ -57,8 +57,39 @@ const createTutorial = async (req, res) => {
     }
 };
 
+const updateTutorial = async (req, res) => {
+    const { title, description, thumbnailUrl, content } = req.body;
+    const { tutorialId } = req.params;
+    const errors = {};
+
+    if (!title) errors.title = "title is required";
+    if (!description) errors.description = "description is required";
+    if (!thumbnailUrl) errors.thumbnailUrl = "thumbnailUrl is required";
+    if (!content) errors.content = "content is required";
+    if (Object.keys(errors).length > 0) return res.status(400).json(errors);
+
+    if (typeof title != "string") errors.title = "title is invalid";
+    if (typeof description != "string") errors.description = "title is invalid";
+    if (typeof thumbnailUrl != "string" || !isURL(thumbnailUrl)) errors.thumbnailUrl = "thumbnailUrl is invalid";
+    if (typeof content != "string") errors.content = "title is invalid";
+    if (Object.keys(errors).length > 0) return res.status(400).json(errors);
+
+    try {
+        const foundTutorial = await Tutorial.findById(tutorialId);
+        if (!foundTutorial) return res.status(404).json({ error: "Tutorial not found" });
+        const tutorial = await Tutorial.findOneAndUpdate(
+            { _id: tutorialId },
+            { title, description, thumbnailUrl, content }
+        );
+        return res.status(201).json(tutorial.transform());
+    } catch (error) {
+        return res.status(500).json(error);
+    }
+};
+
 module.exports = {
     getTutorials,
-    createTutorial,
     getTutorialById,
+    createTutorial,
+    updateTutorial,
 };

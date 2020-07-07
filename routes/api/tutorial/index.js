@@ -8,5 +8,6 @@ router.get("/", tutorialController.getTutorials);
 router.get("/:tutorialId", tutorialController.getTutorialById);
 router.post("/upload-image", authenticate, authorize(["admin"]), uploadSingleImage);
 router.post("/", authenticate, authorize(["admin"]), tutorialController.createTutorial);
+router.put("/:tutorialId", authenticate, authorize(["admin"]), tutorialController.updateTutorial);
 
 module.exports = router;
