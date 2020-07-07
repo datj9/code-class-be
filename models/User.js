@@ -18,7 +18,10 @@ const UserSchema = new mongoose.Schema({
         type: String,
         default: "client",
     },
-    savedTutorials: [mongoose.Types.ObjectId],
+    savedTutorials: {
+        type: [mongoose.Types.ObjectId],
+        ref: "Tutorial",
+    },
     profilePhoto: String,
 });
 
