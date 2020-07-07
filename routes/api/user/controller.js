@@ -66,7 +66,7 @@ const signIn = async (req, res) => {
     }
     if (Object.keys(errors).length) return res.status(500).json(errors);
 
-    let user = await User.findOne({ email }).populate("savedTutorials");
+    let user = await User.findOne({ email });
     if (!user) return res.status(500).json({ email: "Email does not exist" });
 
     const isMatch = await bcrypt.compare(password, user.password);
@@ -90,13 +90,32 @@ const addTutorial = async (req, res) => {
     try {
         const foundTutorial = await Tutorial.findById(tutorialId);
         if (!foundTutorial) return res.status(404).json({ error: "Tutorial not found" });
-        const user = await User.findOneAndUpdate({ _id: id }, { $push: { savedTutorials: tutorialId } }).populate(
-            "savedTutorials"
-        );
-        return res.status(200).json(user.transform());
+
+        const user = await User.findById(id).select("-password");
+        const foundIndex = user.savedTutorials.findIndex((tutorial) => tutorial == tutorialId);
+        if (foundIndex == -1) {
+            user.savedTutorials.push(tutorialId);
+            await user.save();
+            const token = await createToken(user.transform());
+
+            return res.status(200).json({ token });
+        } else {
+            return res.status(400).json({ error: "Tutorial was saved" });
+        }
     } catch (error) {
         return res.status(500).json(error);
     }
 };
 
-module.exports = { signIn, signUp, addTutorial };
+const getSavedTutorials = async (req, res) => {
+    const { id } = req.user;
+    try {
+        const user = await User.findById(id).select(["savedTutorials"]).populate("savedTutorials");
+        user.savedTutorials.forEach((tutorial, i) => (user.savedTutorials[i] = tutorial.transform()));
+        return res.status(200).json(user.savedTutorials);
+    } catch (error) {
+        return res.status(500).json(error);
+    }
+};
+
+module.exports = { signIn, signUp, addTutorial, getSavedTutorials };
