@@ -82,7 +82,7 @@ const updateTutorial = async (req, res) => {
             { _id: tutorialId },
             { title, description, thumbnailUrl, content }
         );
-        return res.status(201).json(tutorial.transform());
+        return res.status(200).json(tutorial.transform());
     } catch (error) {
         return res.status(500).json(error);
     }
