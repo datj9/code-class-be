@@ -96,8 +96,7 @@ const addTutorial = async (req, res) => {
         if (foundIndex == -1) {
             user.savedTutorials.push(tutorialId);
             await user.save();
-            const foundUser = await User.findById(id).select("-password");
-            const newToken = await createToken(foundUser.transform());
+            const newToken = await createToken(user.transform());
             return res.status(200).json({ token: newToken });
         } else {
             return res.status(400).json({ error: "Tutorial was saved" });
