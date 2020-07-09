@@ -75,7 +75,7 @@ const createTutorial = async (req, res) => {
 };
 
 const updateTutorial = async (req, res) => {
-    const { title, description, thumbnailUrl, content } = req.body;
+    const { title, description, thumbnailUrl, content, tags } = req.body;
     const { tutorialId } = req.params;
     const errors = {};
 
@@ -83,12 +83,14 @@ const updateTutorial = async (req, res) => {
     if (!description) errors.description = "description is required";
     if (!thumbnailUrl) errors.thumbnailUrl = "thumbnailUrl is required";
     if (!content) errors.content = "content is required";
+    if (!tags) errors.tags = "tags is required";
     if (Object.keys(errors).length > 0) return res.status(400).json(errors);
 
     if (typeof title != "string") errors.title = "title is invalid";
     if (typeof description != "string") errors.description = "title is invalid";
     if (typeof thumbnailUrl != "string" || !isURL(thumbnailUrl)) errors.thumbnailUrl = "thumbnailUrl is invalid";
     if (typeof content != "string") errors.content = "title is invalid";
+    if (!Array.isArray(tags)) errors.tags = "tags is invalid";
     if (Object.keys(errors).length > 0) return res.status(400).json(errors);
 
     try {
@@ -96,7 +98,7 @@ const updateTutorial = async (req, res) => {
         if (!foundTutorial) return res.status(404).json({ error: "Tutorial not found" });
         const tutorial = await Tutorial.findOneAndUpdate(
             { _id: tutorialId },
-            { title, description, thumbnailUrl, content }
+            { title, description, thumbnailUrl, content, tags }
         );
         return res.status(200).json(tutorial.transform());
     } catch (error) {
