@@ -41,19 +41,21 @@ const getTutorialById = async (req, res) => {
 };
 
 const createTutorial = async (req, res) => {
-    const { title, description, thumbnailUrl, content } = req.body;
+    const { title, description, thumbnailUrl, content, tags } = req.body;
     const errors = {};
 
     if (!title) errors.title = "title is required";
     if (!description) errors.description = "description is required";
     if (!thumbnailUrl) errors.thumbnailUrl = "thumbnailUrl is required";
     if (!content) errors.content = "content is required";
+    if (!tags) errors.tags = "tags is required";
     if (Object.keys(errors).length > 0) return res.status(400).json(errors);
 
     if (typeof title != "string") errors.title = "title is invalid";
     if (typeof description != "string") errors.description = "title is invalid";
     if (typeof thumbnailUrl != "string" || !isURL(thumbnailUrl)) errors.thumbnailUrl = "thumbnailUrl is invalid";
     if (typeof content != "string") errors.content = "title is invalid";
+    if (!Array.isArray(tags)) errors.tags = "tags is invalid";
     if (Object.keys(errors).length > 0) return res.status(400).json(errors);
 
     const newTutorial = new Tutorial({
@@ -61,6 +63,7 @@ const createTutorial = async (req, res) => {
         description,
         thumbnailUrl,
         content,
+        tags,
     });
 
     try {
