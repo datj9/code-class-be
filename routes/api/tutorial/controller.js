@@ -1,10 +1,23 @@
 const { Tutorial } = require("../../../models/Tutorial");
 const isURL = require("validator/lib/isURL");
 const ObjectId = require("mongoose").Types.ObjectId;
+const isInt = require("validator/lib/isInt");
 
 const getTutorials = async (req, res) => {
+    let tutorials;
+    const tags = req.query.tags && JSON.parse(req.query.tags);
+    const { pageSize, pageIndex } = req.query;
+    const limit = isInt(pageSize + "") ? parseInt(pageSize) : 8;
+    const skip = isInt(pageIndex + "") ? (pageIndex - 1) * limit : 0;
+
     try {
-        const tutorials = await Tutorial.find();
+        if (Array.isArray(tags) && tags.length > 0) {
+            tutorials = await Tutorial.find({ tags: { $in: tags } })
+                .skip(skip)
+                .limit(limit);
+        } else {
+            tutorials = await Tutorial.find().skip(skip).limit(limit);
+        }
         tutorials.forEach((tutorial, i) => (tutorials[i] = tutorial.transform()));
         return res.status(200).json(tutorials);
     } catch (error) {
