@@ -5,7 +5,7 @@ const app = express();
 const cors = require("cors");
 const { mongoURI } = require("./config");
 
-app.use(express.json({ extended: true }));
+app.use(express.json({ extended: true, limit: "50mb" }));
 app.use("/api", cors(), require("./routes/api"));
 mongoose.connect(
     mongoURI,
