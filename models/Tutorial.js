@@ -22,6 +22,7 @@ const TutorialSchema = new mongoose.Schema(
             type: Number,
             default: 0,
         },
+        difficultyLevel: Number,
         tags: [String],
     },
     { timestamps: true }
