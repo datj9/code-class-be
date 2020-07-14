@@ -18,9 +18,9 @@
     "scripts": {
         "server": "nodemon .",
         "start": "node .",
-        "start:local": "export NODE_ENV=local && node server.js",
-        "start:local:win": "set NODE_ENV=local&nodemon server.js",
-        "start:staging": "export NODE_ENV=staging && node server.js",
-        "start:staging:win": "set NODE_ENV=staging&nodemon server.js"
+        "start:local": "export NODE_ENV=local && node index.js",
+        "start:local:win": "set NODE_ENV=local&nodemon index.js",
+        "start:staging": "export NODE_ENV=staging && node index.js",
+        "start:staging:win": "set NODE_ENV=staging&nodemon index.js"
     }
 }
