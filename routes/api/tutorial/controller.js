@@ -13,10 +13,11 @@ const getTutorials = async (req, res) => {
     try {
         if (Array.isArray(tags) && tags.length > 0) {
             tutorials = await Tutorial.find({ tags: { $in: tags } })
+                .sort([["createdAt", -1]])
                 .skip(skip)
                 .limit(limit);
         } else {
-            tutorials = await Tutorial.find().skip(skip).limit(limit);
+            tutorials = await Tutorial.find().sort([["createdAt", -1]]).skip(skip).limit(limit);
         }
         tutorials.forEach((tutorial, i) => (tutorials[i] = tutorial.transform()));
         return res.status(200).json(tutorials);
