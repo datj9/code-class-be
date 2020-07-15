@@ -33,17 +33,14 @@ const getTutorials = async (req, res) => {
 
 const getTutorialById = async (req, res) => {
     const { tutorialId } = req.params;
-    const { reqFromAd } = req.query;
-    let tutorial;
+    if (!ObjectId.isValid(tutorialId + "")) return res.status(400).json({ error: "tutorialId is invalid" });
+
     try {
-        if (reqFromAd != "true") {
-            tutorial = await Tutorial.findOneAndUpdate({ _id: tutorialId }, { $inc: { views: 1 } });
-            return res.status(200).json(tutorial.transform());
-        } else {
-            tutorial = await Tutorial.findById(tutorialId);
-            return res.status(200).json(tutorial.transform());
-        }
-    } catch (error) {}
+        const tutorial = await Tutorial.findById(tutorialId);
+        return res.status(200).json(tutorial.transform());
+    } catch (error) {
+        return res.status(500).json(error);
+    }
 };
 
 const createTutorial = async (req, res) => {
