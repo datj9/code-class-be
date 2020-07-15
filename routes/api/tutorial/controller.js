@@ -47,7 +47,7 @@ const getTutorialById = async (req, res) => {
 };
 
 const createTutorial = async (req, res) => {
-    const { title, description, thumbnailUrl, content, difficultyLevel, tags } = req.body;
+    const { title, description, thumbnailUrl, content, difficultyLevel, readingTime, tags } = req.body;
     const errors = {};
 
     if (!title) errors.title = "title is required";
@@ -56,6 +56,7 @@ const createTutorial = async (req, res) => {
     if (!content) errors.content = "content is required";
     if (!tags) errors.tags = "tags is required";
     if (!difficultyLevel) errors.difficultyLevel = "difficultyLevel is required";
+    if (!readingTime) errors.readingTime = "readingTime is required";
     if (Object.keys(errors).length > 0) return res.status(400).json(errors);
 
     if (typeof title != "string") errors.title = "title is invalid";
@@ -70,6 +71,7 @@ const createTutorial = async (req, res) => {
     ) {
         errors.difficultyLevel = "difficultyLevel is invalid";
     }
+    if (typeof readingTime != "number") errors.readingTime = "readingTime is invalid";
     if (!Array.isArray(tags)) errors.tags = "tags is invalid";
     if (Object.keys(errors).length > 0) return res.status(400).json(errors);
 
@@ -79,6 +81,7 @@ const createTutorial = async (req, res) => {
         thumbnailUrl,
         content,
         difficultyLevel,
+        readingTime,
         tags,
     });
 
@@ -91,7 +94,7 @@ const createTutorial = async (req, res) => {
 };
 
 const updateTutorial = async (req, res) => {
-    const { title, description, thumbnailUrl, content, difficultyLevel, tags } = req.body;
+    const { title, description, thumbnailUrl, content, difficultyLevel, readingTime, tags } = req.body;
     const { tutorialId } = req.params;
     const errors = {};
 
@@ -100,6 +103,7 @@ const updateTutorial = async (req, res) => {
     if (!thumbnailUrl) errors.thumbnailUrl = "thumbnailUrl is required";
     if (!content) errors.content = "content is required";
     if (!difficultyLevel) errors.difficultyLevel = "difficultyLevel is required";
+    if (!readingTime) errors.readingTime = "readingTime is required";
     if (!tags) errors.tags = "tags is required";
     if (Object.keys(errors).length > 0) return res.status(400).json(errors);
 
@@ -115,6 +119,7 @@ const updateTutorial = async (req, res) => {
     ) {
         errors.difficultyLevel = "difficultyLevel is invalid";
     }
+    if (typeof readingTime != "number") errors.readingTime = "readingTime is invalid";
     if (!Array.isArray(tags)) errors.tags = "tags is invalid";
     if (Object.keys(errors).length > 0) return res.status(400).json(errors);
 
@@ -123,7 +128,7 @@ const updateTutorial = async (req, res) => {
         if (!foundTutorial) return res.status(404).json({ error: "Tutorial not found" });
         const tutorial = await Tutorial.findOneAndUpdate(
             { _id: tutorialId },
-            { title, description, thumbnailUrl, content, difficultyLevel, tags }
+            { title, description, thumbnailUrl, content, difficultyLevel, readingTime, tags }
         );
         return res.status(200).json(tutorial.transform());
     } catch (error) {
