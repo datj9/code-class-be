@@ -154,15 +154,16 @@ const increaseView = async (req, res) => {
                 city,
             });
             await newTracking.save();
+            await Tutorial.updateOne({ _id: tutorialId }, { $inc: { views: 1 } });
 
             return res.status(201).json({
-                message: "Updated successfully",
+                message: "Created successfully",
             });
         } else if ((Date.now() - foundTracking.lastTimeSeen) / 1000 / 60 > foundTracking.tutorial.readingTime / 8) {
-            await Tutorial.updateOne({ _id: tutorialId }, { $inc: { views: 1 } });
             foundTracking.viwes = ++foundTracking.views;
             foundTracking.lastTimeSeen = Date.now();
             await foundTracking.save();
+            await Tutorial.updateOne({ _id: tutorialId }, { $inc: { views: 1 } });
 
             return res.status(200).json({ message: "Updated successfully" });
         } else {
