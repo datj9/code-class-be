@@ -71,7 +71,7 @@ const createTutorial = async (req, res) => {
     ) {
         errors.difficultyLevel = "difficultyLevel is invalid";
     }
-    if (typeof readingTime != "number") errors.readingTime = "readingTime is invalid";
+    if (typeof readingTime != "number" || readingTime < 1) errors.readingTime = "readingTime is invalid";
     if (!Array.isArray(tags)) errors.tags = "tags is invalid";
     if (Object.keys(errors).length > 0) return res.status(400).json(errors);
 
@@ -119,7 +119,7 @@ const updateTutorial = async (req, res) => {
     ) {
         errors.difficultyLevel = "difficultyLevel is invalid";
     }
-    if (typeof readingTime != "number") errors.readingTime = "readingTime is invalid";
+    if (typeof readingTime != "number" || readingTime < 1) errors.readingTime = "readingTime is invalid";
     if (!Array.isArray(tags)) errors.tags = "tags is invalid";
     if (Object.keys(errors).length > 0) return res.status(400).json(errors);
 
