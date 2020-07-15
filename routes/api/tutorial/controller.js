@@ -1,7 +1,9 @@
 const { Tutorial } = require("../../../models/Tutorial");
+const { TrackingUser } = require("../../../models/TrackingUser");
 const isURL = require("validator/lib/isURL");
 const ObjectId = require("mongoose").Types.ObjectId;
 const isInt = require("validator/lib/isInt");
+const isIP = require("validator/lib/isIP");
 
 const getTutorials = async (req, res) => {
     let tutorials;
@@ -17,7 +19,10 @@ const getTutorials = async (req, res) => {
                 .skip(skip)
                 .limit(limit);
         } else {
-            tutorials = await Tutorial.find().sort([["createdAt", -1]]).skip(skip).limit(limit);
+            tutorials = await Tutorial.find()
+                .sort([["createdAt", -1]])
+                .skip(skip)
+                .limit(limit);
         }
         tutorials.forEach((tutorial, i) => (tutorials[i] = tutorial.transform()));
         return res.status(200).json(tutorials);
@@ -126,6 +131,43 @@ const updateTutorial = async (req, res) => {
     }
 };
 
+const increaseView = async (req, res) => {
+    const { tutorialId, ip, country } = req.body;
+    const errors = {};
+
+    if (!ObjectId.isValid(tutorialId + "")) errors.tutorialId = "tutorialId is invalid";
+    if (!isIP(ip)) errors.ip = "ip is invalid";
+    if (Object.keys(errors).length > 0) return res.status(400).json(errors);
+
+    const foundTracking = await TrackingUser.findOne({ ip, tutorial: tutorial }).populate("tutorial");
+
+    try {
+        if (!foundTracking) {
+            const newTracking = new TrackingUser({
+                ip,
+                tutorial: tutorialId,
+                country,
+            });
+            await newTracking.save();
+
+            return res.status(201).json(trackingUser);
+        } else if (Date.now() - foundTracking.lastTimeSeen > foundTracking.tutorial.readingTime / 8) {
+            foundTracking.viwes++;
+            foundTracking.lastTimeSeen = Date.now();
+            await foundTracking.save();
+
+            return res.status(200).json(foundTracking);
+        } else {
+            foundTracking.lastTimeSeen = Date.now();
+            await foundTracking.save();
+
+            return res.status(200).json(foundTracking);
+        }
+    } catch (error) {
+        return res.status(500).json(error);
+    }
+};
+
 const deleteTutorial = async (req, res) => {
     const { tutorialId } = req.params;
     if (!ObjectId.isValid(tutorialId)) return res.status(400).json({ error: "tutorialId is invalid" });
@@ -145,5 +187,6 @@ module.exports = {
     getTutorialById,
     createTutorial,
     updateTutorial,
+    increaseView,
     deleteTutorial,
 };
