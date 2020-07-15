@@ -132,11 +132,13 @@ const updateTutorial = async (req, res) => {
 };
 
 const increaseView = async (req, res) => {
-    const { tutorialId, ip, country } = req.body;
+    const { tutorialId, ip, country, city } = req.body;
     const errors = {};
 
     if (!ObjectId.isValid(tutorialId + "")) errors.tutorialId = "tutorialId is invalid";
     if (!isIP(ip)) errors.ip = "ip is invalid";
+    if (country && typeof country != "string") errors.country = "country is invalid";
+    if (city && typeof city != "string") errors.city = "city is invalid";
     if (Object.keys(errors).length > 0) return res.status(400).json(errors);
 
     const foundTracking = await TrackingUser.findOne({ ip, tutorial: tutorial }).populate("tutorial");
@@ -147,6 +149,7 @@ const increaseView = async (req, res) => {
                 ip,
                 tutorial: tutorialId,
                 country,
+                city,
             });
             await newTracking.save();
 
