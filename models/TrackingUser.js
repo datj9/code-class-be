@@ -14,7 +14,7 @@ const TrackingUserSchema = new mongoose.Schema({
     },
     views: {
         type: Number,
-        default: 0,
+        default: 1,
     },
     lastTimeSeen: {
         type: Number,
