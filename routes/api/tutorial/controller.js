@@ -152,9 +152,11 @@ const increaseView = async (req, res) => {
 
             return res.status(201).json(trackingUser);
         } else if (Date.now() - foundTracking.lastTimeSeen > foundTracking.tutorial.readingTime / 8) {
+            const tutorial = await Tutorial.findById(tutorialId);
+            tutorial.views++;
             foundTracking.viwes++;
             foundTracking.lastTimeSeen = Date.now();
-            await foundTracking.save();
+            await Promise.all([tutorial.save(), foundTracking.save()]);
 
             return res.status(200).json(foundTracking);
         } else {
