@@ -7,6 +7,7 @@ const isIP = require("validator/lib/isIP");
 
 const getTutorials = async (req, res) => {
     let tutorials;
+    let total;
     const tags = req.query.tags && JSON.parse(req.query.tags);
     const { pageSize, pageIndex } = req.query;
     const limit = isInt(pageSize + "") ? parseInt(pageSize) : 8;
@@ -18,14 +19,16 @@ const getTutorials = async (req, res) => {
                 .sort([["createdAt", -1]])
                 .skip(skip)
                 .limit(limit);
+            total = await Tutorial.countDocuments({ tags: { $in: tags } });
         } else {
             tutorials = await Tutorial.find()
                 .sort([["createdAt", -1]])
                 .skip(skip)
                 .limit(limit);
+            total = await Tutorial.countDocuments();
         }
         tutorials.forEach((tutorial, i) => (tutorials[i] = tutorial.transform()));
-        return res.status(200).json(tutorials);
+        return res.status(200).json({ tutorials, total });
     } catch (error) {
         return res.status(500).json(error);
     }
