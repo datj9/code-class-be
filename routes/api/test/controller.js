@@ -11,7 +11,15 @@ const getTests = async (req, res) => {
     try {
         const tests = await Test.find().skip(skip).limit(limit);
 
-        tests.forEach((test, i) => (tests[i] = test.transform()));
+        tests.forEach((test, i) => {
+            const numberOfQuestion = test.questions.length;
+            tests[i] = {
+                ...test.transform(),
+                numberOfQuestion,
+            };
+            delete tests[i].questions;
+        });
+
         return res.status(200).json(tests);
     } catch (error) {
         return res.status(500).json(error);
