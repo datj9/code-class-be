@@ -7,11 +7,11 @@ const createQuestion = async () => {
     if (!text) errors.text = "text is required";
     if (!answers) errors.answers = "answers is required";
     if (!correctAnswer) errors.correctAnswer = "correctAnswer is required";
-    if (Object.keys(errors)) return res.status(400).json(errors);
+    if (Object.keys(errors).length) return res.status(400).json(errors);
 
     if (typeof text != "string") errors.text = "text is invalid";
     if (typeof correctAnswer != "number") errors.correctAnswer = "correctAnswer is invalid";
-    if (explaination != "" && typeof explaination != "string") errors.explaination = "explaination is invalid";
+    if (explaination && typeof explaination != "string") errors.explaination = "explaination is invalid";
     answers.forEach((answer, i) => {
         if (typeof answer != "string" && errors.answers == undefined) {
             errors.answers = [];
@@ -20,14 +20,14 @@ const createQuestion = async () => {
             errors.answers[i] = "answer is invalid";
         }
     });
-    if (Object.keys(errors)) return res.status(400).json(errors);
+    if (Object.keys(errors).length) return res.status(400).json(errors);
 
     try {
         const question = new Question({
             text,
             answers,
             correctAnswer,
-            explaination,
+            explaination: explaination ? explaination : undefined,
         });
         await question.save();
         return res.status(201).json(question.transform());

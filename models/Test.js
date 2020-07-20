@@ -14,8 +14,8 @@ const TestSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
-        technology: {
-            type: String,
+        technologies: {
+            type: [String],
             required: true,
         },
         questions: {
