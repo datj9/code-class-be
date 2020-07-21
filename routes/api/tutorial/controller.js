@@ -8,8 +8,8 @@ const isIP = require("validator/lib/isIP");
 const getTutorials = async (req, res) => {
     let tutorials;
     let total;
-    const { pageSize, pageIndex, tags, sortBy, orderBy } = req.query;
-    const tags = req.query.tags && JSON.parse(tags);
+    const { pageSize, pageIndex, tags: tagsReq, sortBy, orderBy } = req.query;
+    const tags = tagsReq && JSON.parse(tagsReq);
     const limit = isInt(pageSize + "") ? parseInt(pageSize) : 8;
     const skip = isInt(pageIndex + "") ? (pageIndex - 1) * limit : 0;
     const sort = ["createdAt", "views", "difficultyLevel"].includes(sortBy) ? sortBy : "createdAt";
