@@ -9,11 +9,14 @@ const getTutorials = async (req, res) => {
     let tutorials;
     let total;
     const { pageSize, pageIndex, tags: tagsReq, sortBy, orderBy } = req.query;
-    const tags = Array.isArray(tagsReq) && JSON.parse(tagsReq);
     const limit = isInt(pageSize + "") ? parseInt(pageSize) : 8;
     const skip = isInt(pageIndex + "") ? (pageIndex - 1) * limit : 0;
     const sort = ["createdAt", "views", "difficultyLevel"].includes(sortBy) ? sortBy : "createdAt";
     const order = orderBy == 1 || orderBy == -1 ? parseInt(orderBy) : -1;
+    let tags;
+    try {
+        tags = Array.isArray(JSON.parse(tagsReq)) ? JSON.parse(tagsReq) : undefined;
+    } catch (error) {}
 
     try {
         if (tags && tags.length > 0) {
