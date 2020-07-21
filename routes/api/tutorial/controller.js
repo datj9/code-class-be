@@ -8,21 +8,23 @@ const isIP = require("validator/lib/isIP");
 const getTutorials = async (req, res) => {
     let tutorials;
     let total;
-    const tags = req.query.tags && JSON.parse(req.query.tags);
-    const { pageSize, pageIndex } = req.query;
+    const { pageSize, pageIndex, tags, sortBy, orderBy } = req.query;
+    const tags = req.query.tags && JSON.parse(tags);
     const limit = isInt(pageSize + "") ? parseInt(pageSize) : 8;
     const skip = isInt(pageIndex + "") ? (pageIndex - 1) * limit : 0;
+    const sort = ["createdAt", "views", "difficultyLevel"].includes(sortBy) ? sortBy : "createdAt";
+    const order = orderBy == 1 || orderBy == -1 ? parseInt(orderBy) : -1;
 
     try {
         if (Array.isArray(tags) && tags.length > 0) {
             tutorials = await Tutorial.find({ tags: { $in: tags } })
-                .sort([["createdAt", -1]])
+                .sort([[sort, order]])
                 .skip(skip)
                 .limit(limit);
             total = await Tutorial.countDocuments({ tags: { $in: tags } });
         } else {
             tutorials = await Tutorial.find()
-                .sort([["createdAt", -1]])
+                .sort([[sort, order]])
                 .skip(skip)
                 .limit(limit);
             total = await Tutorial.countDocuments();
