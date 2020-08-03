@@ -1,4 +1,5 @@
 const { Task } = require("../../../models/Task");
+const ObjectId = require("mongoose").Types.ObjectId;
 
 const getTasks = async (req, res) => {
     try {
@@ -33,4 +34,24 @@ const createTask = async (req, res) => {
     }
 };
 
-module.exports = { getTasks, createTask };
+const updateTaskStatus = async (req, res) => {
+    const { id } = req.params;
+    const { isDone } = req.params;
+    const errors = {};
+
+    if (!ObjectId.isValid(id + "")) errors.id = "taskId is invalid";
+    if (typeof isDone != "boolean") errors.isDone = "isDone is invalid";
+    if (Object.keys(errors).length) return res.status(400).json(errors);
+
+    try {
+        const task = await Task.findById(id);
+        if (!task) return res.status(404).json({ message: "Task not found" });
+
+        await Task.updateOne({ isDone });
+        return res.status(200).json({ message: "Updated successfully" });
+    } catch (error) {
+        return res.status(500).json(error);
+    }
+};
+
+module.exports = { getTasks, createTask, updateTaskStatus };
