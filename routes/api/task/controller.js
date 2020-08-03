@@ -36,7 +36,7 @@ const createTask = async (req, res) => {
 
 const updateTaskStatus = async (req, res) => {
     const { id } = req.params;
-    const { isDone } = req.params;
+    const { isDone } = req.body;
     const errors = {};
 
     if (!ObjectId.isValid(id + "")) errors.id = "taskId is invalid";
