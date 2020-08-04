@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { TaskSchema } = require("./Task");
 
 const UserSchema = new mongoose.Schema({
     email: {
@@ -19,6 +20,10 @@ const UserSchema = new mongoose.Schema({
         default: "client",
     },
     savedTutorials: [{ type: mongoose.Types.ObjectId, ref: "Tutorial" }],
+    tasks: {
+        type: [TaskSchema],
+        default: [],
+    },
     profilePhoto: String,
 });
 
