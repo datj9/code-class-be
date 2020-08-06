@@ -36,7 +36,7 @@ const signUp = async (req, res) => {
         if (password.length < 8) errors.password = "password is too weak";
         if (password !== confirmPassword) errors.confirmPassword = "password and confirmPassword does not match";
         if (!isEmail(email)) errors.email = "email is not valid";
-        if (date && !isDate(dateOfBirth)) errors.dateOfBirth = "dateOfBirth is invalid";
+        if (dateOfBirth && !isDate(dateOfBirth)) errors.dateOfBirth = "dateOfBirth is invalid";
         if (phoneNumber && !isMobilePhone(phoneNumber, "vi-VN")) errors.phoneNumber = "phoneNumber is invalid";
         if (Object.keys(errors).length) return res.status(500).json(errors);
 
