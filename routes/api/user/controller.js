@@ -2,6 +2,8 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const isEmpty = require("validator/lib/isEmpty");
 const isEmail = require("validator/lib/isEmail");
+const isDate = require("validator/lib/isDate");
+const isMobilePhone = require("validator/lib/isMobilePhone");
 const { User } = require("../../../models/User");
 const { promisify } = require("util");
 const { secretKey } = require("../../../config");
@@ -24,7 +26,7 @@ const signUp = async (req, res) => {
         const validatedFields = ["email", "password", "confirmPassword", "name"];
         let errors = {};
         const reqBody = req.body;
-        const { email, name, password, confirmPassword } = reqBody;
+        const { email, name, password, confirmPassword, phoneNumber, dateOfBirth } = reqBody;
 
         for (let field of validatedFields) {
             if (!reqBody[field]) errors[field] = `${field} is required`;
@@ -34,6 +36,8 @@ const signUp = async (req, res) => {
         if (password.length < 8) errors.password = "password is too weak";
         if (password !== confirmPassword) errors.confirmPassword = "password and confirmPassword does not match";
         if (!isEmail(email)) errors.email = "email is not valid";
+        if (date && !isDate(dateOfBirth)) errors.dateOfBirth = "dateOfBirth is invalid";
+        if (phoneNumber && !isMobilePhone(phoneNumber, "vi-VN")) errors.phoneNumber = "phoneNumber is invalid";
         if (Object.keys(errors).length) return res.status(500).json(errors);
 
         const user = await User.findOne({ email });
@@ -47,10 +51,12 @@ const signUp = async (req, res) => {
             email,
             name,
             password: hash,
+            phoneNumber,
+            dateOfBirth,
         });
         await newUser.save();
-        const { id, userType, savedTutorials } = newUser;
-        const token = await createToken({ id, email, name, userType, savedTutorials });
+        const { id, userType, savedTutorials, phoneNumber, dateOfBirth } = newUser;
+        const token = await createToken({ id, email, name, userType, savedTutorials, phoneNumber, dateOfBirth });
         return res.status(201).json({ token });
     } catch (error) {
         res.status(400).json({ error });
