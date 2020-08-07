@@ -7,6 +7,7 @@ const { secretKey } = require("../../../config");
 const { Tutorial } = require("../../../models/Tutorial");
 const ObjectId = require("mongoose").Types.ObjectId;
 const hashPass = promisify(bcrypt.hash);
+const dayjs = require("dayjs");
 
 const createToken = async (payload) => {
     try {
@@ -19,9 +20,9 @@ const createToken = async (payload) => {
 
 const signUp = async (req, res) => {
     const validatedFields = ["email", "password", "confirmPassword", "name"];
-    let errors = {};
     const reqBody = req.body;
     const { email, name, password, confirmPassword, phoneNumber, dateOfBirth } = reqBody;
+    const errors = {};
 
     for (let field of validatedFields) {
         if (!reqBody[field]) errors[field] = `${field} is required`;
@@ -31,8 +32,12 @@ const signUp = async (req, res) => {
     if (password.length < 8) errors.password = "password is too weak";
     if (password !== confirmPassword) errors.confirmPassword = "password and confirmPassword does not match";
     if (!validator.isEmail(email)) errors.email = "email is not valid";
-    if (phoneNumber && !validator.isMobilePhone(phoneNumber + "", "vi-VN"))
+    if (phoneNumber && !validator.isMobilePhone(phoneNumber + "", "vi-VN")) {
         errors.phoneNumber = "phoneNumber is invalid";
+    }
+    if (dateOfBirth && !validator.isDate(dayjs(dateOfBirth).format("YYYY/MM/DD"))) {
+        errors.dateOfBirth = "dateOfBirth is invalid";
+    }
     if (Object.keys(errors).length) return res.status(400).json(errors);
 
     try {
@@ -54,6 +59,45 @@ const signUp = async (req, res) => {
         const { id, userType, savedTutorials } = newUser;
         const token = await createToken({ id, email, name, userType, savedTutorials, phoneNumber, dateOfBirth });
         return res.status(201).json({ token });
+    } catch (error) {
+        res.status(500).json({ error });
+    }
+};
+
+const updateUserInfo = async (req, res) => {
+    const validatedFields = ["name"];
+    const reqBody = req.body;
+    const { name, phoneNumber, dateOfBirth } = reqBody;
+    const { email } = req.user;
+    const errors = {};
+
+    for (let field of validatedFields) {
+        if (!reqBody[field]) errors[field] = `${field} is required`;
+    }
+    if (Object.keys(errors).length) return res.status(400).json(errors);
+
+    if (phoneNumber && !validator.isMobilePhone(phoneNumber + "", "vi-VN")) {
+        errors.phoneNumber = "phoneNumber is invalid";
+    }
+    if (dateOfBirth && !validator.isDate(dayjs(dateOfBirth).format("YYYY/MM/DD"))) {
+        errors.dateOfBirth = "dateOfBirth is invalid";
+    }
+    if (Object.keys(errors).length) return res.status(400).json(errors);
+
+    try {
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(400).json({ error: "User not found" });
+        }
+
+        const updatedUser = await User.findOneAndUpdate(
+            { email },
+            { name, phoneNumber, dateOfBirth },
+            { returnOriginal: false }
+        );
+        const { id, userType, savedTutorials } = updatedUser;
+        const token = await createToken({ id, email, name, userType, savedTutorials, phoneNumber, dateOfBirth });
+        return res.status(200).json({ token });
     } catch (error) {
         res.status(500).json({ error });
     }
@@ -124,4 +168,4 @@ const getSavedTutorials = async (req, res) => {
     }
 };
 
-module.exports = { signIn, signUp, addTutorial, getSavedTutorials };
+module.exports = { signIn, signUp, addTutorial, getSavedTutorials, updateUserInfo };
