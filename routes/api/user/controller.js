@@ -108,7 +108,7 @@ const signIn = async (req, res) => {
     const errors = {};
     const { email, password } = req.body;
     for (let field of validatedFields) {
-        if (validator.isEmpty(req.body[field])) errors[field] = `${field} is required`;
+        if (!req.body[field]) errors[field] = `${field} is required`;
     }
     if (Object.keys(errors).length) return res.status(400).json(errors);
 
@@ -126,6 +126,44 @@ const signIn = async (req, res) => {
         return res.status(200).json({
             token,
         });
+    } catch (error) {
+        return res.status(500).json(error);
+    }
+};
+
+const changePassword = async (req, res) => {
+    const { oldPassword, newPassword, confirmPassword } = req.body;
+    const { id } = req.user;
+    const errors = {};
+    const validatedFields = ["oldPassword", "newPassword", "confirmPassword"];
+
+    for (const field of validatedFields) {
+        if (!req.body[field]) errors[field] = `${field} is required`;
+    }
+    if (Object.keys(errors).length) return res.status(400).json(errors);
+
+    if (typeof oldPassword != "string") errors.oldPassword = "oldPassword is invalid";
+    if (typeof newPassword != "string") errors.newPassword = "newPassword is invalid";
+    if (typeof confirmPassword != "string") errors.confirmPassword = "confirmPassword is invalid";
+    if (Object.keys(errors).length) return res.status(400).json(errors);
+
+    try {
+        const user = await User.findById(id);
+        const isMatch = await bcrypt.compare(oldPassword, user.password);
+
+        if (!isMatch) {
+            return res.status(400).json({ oldPassword: "oldPassword is not correct" });
+        }
+
+        if (newPassword.length < 8)
+            return res.status(400).json({ newPassword: "newPassword must have at least 8 characters" });
+        if (confirmPassword !== newPassword)
+            return res.status(400).json({ confirmPassword: "confirmPassword does not match" });
+
+        const hash = await hashPass(newPassword, 10);
+        await User.updateOne({ _id: id }, { password: hash });
+
+        return res.status(200).json({ message: "Change password successfully" });
     } catch (error) {
         return res.status(500).json(error);
     }
