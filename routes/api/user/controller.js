@@ -53,7 +53,7 @@ const signUp = async (req, res) => {
             name,
             password: hash,
             phoneNumber,
-            dateOfBirth,
+            dateOfBirth: dateOfBirth && dateOfBirth,
         });
         await newUser.save();
         const { id, userType, savedTutorials } = newUser;
@@ -92,7 +92,7 @@ const updateUserInfo = async (req, res) => {
 
         const updatedUser = await User.findOneAndUpdate(
             { email },
-            { name, phoneNumber, dateOfBirth },
+            { name, phoneNumber, dateOfBirth: dateOfBirth && dateOfBirth },
             { returnOriginal: false }
         );
         const { id, userType, savedTutorials } = updatedUser;
