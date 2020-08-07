@@ -206,4 +206,4 @@ const getSavedTutorials = async (req, res) => {
     }
 };
 
-module.exports = { signIn, signUp, addTutorial, getSavedTutorials, updateUserInfo };
+module.exports = { signIn, signUp, addTutorial, getSavedTutorials, updateUserInfo, changePassword };

@@ -8,5 +8,6 @@ router.post("/sign-in", userController.signIn);
 router.post("/sign-up", userController.signUp);
 router.post("/save-tutorial", authenticate, userController.addTutorial);
 router.put("/", authenticate, userController.updateUserInfo);
+router.patch("/change-password", userController.changePassword);
 
 module.exports = router;
