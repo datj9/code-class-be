@@ -5,6 +5,8 @@ const isURL = require("validator/lib/isURL");
 const ObjectId = require("mongoose").Types.ObjectId;
 const isInt = require("validator/lib/isInt");
 const isIP = require("validator/lib/isIP");
+const jwt = require("jsonwebtoken");
+const { secretKey } = require("../config");
 
 const getTutorials = async (req, res) => {
     let tutorials;
@@ -45,14 +47,14 @@ const getTutorialById = async (req, res) => {
     const { id } = req.user;
 
     if (!ObjectId.isValid(tutorialId + "")) return res.status(400).json({ error: "tutorialId is invalid" });
-
     try {
         const user = await User.findById(id);
         const tutorial = await Tutorial.findById(tutorialId);
+        const isSaved = user ? user.savedTutorials.includes(tutorialId) : false;
 
         return res.status(200).json({
             ...tutorial.transform(),
-            isSaved: user.savedTutorials.includes(tutorial._id),
+            isSaved,
         });
     } catch (error) {
         return res.status(500).json(error);
