@@ -5,8 +5,6 @@ const isURL = require("validator/lib/isURL");
 const ObjectId = require("mongoose").Types.ObjectId;
 const isInt = require("validator/lib/isInt");
 const isIP = require("validator/lib/isIP");
-const jwt = require("jsonwebtoken");
-const { secretKey } = require("../config");
 
 const getTutorials = async (req, res) => {
     let tutorials;
