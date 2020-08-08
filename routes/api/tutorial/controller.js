@@ -43,10 +43,13 @@ const getTutorials = async (req, res) => {
 const getTutorialById = async (req, res) => {
     const { tutorialId } = req.params;
     const { id } = req.user;
+    let user;
 
     if (!ObjectId.isValid(tutorialId + "")) return res.status(400).json({ error: "tutorialId is invalid" });
     try {
-        const user = await User.findById(id);
+        if (id) {
+            user = await User.findById(id);
+        }
         const tutorial = await Tutorial.findById(tutorialId);
         const isSaved = user ? user.savedTutorials.includes(tutorialId) : false;
 
