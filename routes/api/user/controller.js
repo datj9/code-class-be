@@ -56,8 +56,8 @@ const signUp = async (req, res) => {
             dateOfBirth,
         });
         await newUser.save();
-        const { id, userType, savedTutorials } = newUser;
-        const token = await createToken({ id, email, name, userType, savedTutorials, phoneNumber, dateOfBirth });
+        const { id, userType } = newUser;
+        const token = await createToken({ id, email, name, userType, phoneNumber, dateOfBirth });
         return res.status(201).json({ token });
     } catch (error) {
         res.status(500).json({ error });
@@ -95,8 +95,8 @@ const updateUserInfo = async (req, res) => {
             { name, phoneNumber, dateOfBirth },
             { returnOriginal: false }
         );
-        const { id, userType, savedTutorials } = updatedUser;
-        const token = await createToken({ id, email, name, userType, savedTutorials, phoneNumber, dateOfBirth });
+        const { id, userType } = updatedUser;
+        const token = await createToken({ id, email, name, userType, phoneNumber, dateOfBirth });
         return res.status(200).json({ token });
     } catch (error) {
         res.status(500).json({ error });
@@ -120,9 +120,9 @@ const signIn = async (req, res) => {
         if (!isMatch) return res.status(403).json({ password: "Password does not match" });
 
         user = user.transform();
-        delete user.password;
 
-        const token = await createToken(user);
+        const { id, name, userType, phoneNumber, dateOfBirth } = user;
+        const token = await createToken({ id, email, name, userType, phoneNumber, dateOfBirth });
         return res.status(200).json({
             token,
         });
@@ -132,27 +132,27 @@ const signIn = async (req, res) => {
 };
 
 const changePassword = async (req, res) => {
-    const { oldPassword, newPassword, confirmPassword } = req.body;
+    const { currentPassword, newPassword, confirmPassword } = req.body;
     const { id } = req.user;
     const errors = {};
-    const validatedFields = ["oldPassword", "newPassword", "confirmPassword"];
+    const validatedFields = ["currentPassword", "newPassword", "confirmPassword"];
 
     for (const field of validatedFields) {
         if (!req.body[field]) errors[field] = `${field} is required`;
     }
     if (Object.keys(errors).length) return res.status(400).json(errors);
 
-    if (typeof oldPassword != "string") errors.oldPassword = "oldPassword is invalid";
+    if (typeof currentPassword != "string") errors.currentPassword = "currentPassword is invalid";
     if (typeof newPassword != "string") errors.newPassword = "newPassword is invalid";
     if (typeof confirmPassword != "string") errors.confirmPassword = "confirmPassword is invalid";
     if (Object.keys(errors).length) return res.status(400).json(errors);
 
     try {
         const user = await User.findById(id);
-        const isMatch = await bcrypt.compare(oldPassword, user.password);
+        const isMatch = await bcrypt.compare(currentPassword, user.password);
 
         if (!isMatch) {
-            return res.status(400).json({ oldPassword: "oldPassword is not correct" });
+            return res.status(400).json({ currentPassword: "currentPassword is not correct" });
         }
 
         if (newPassword.length < 8)

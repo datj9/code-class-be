@@ -1,4 +1,5 @@
 const { Tutorial } = require("../../../models/Tutorial");
+const { User } = require("../../../models/User");
 const { TrackingUser } = require("../../../models/TrackingUser");
 const isURL = require("validator/lib/isURL");
 const ObjectId = require("mongoose").Types.ObjectId;
@@ -41,11 +42,18 @@ const getTutorials = async (req, res) => {
 
 const getTutorialById = async (req, res) => {
     const { tutorialId } = req.params;
+    const { id } = req.user;
+
     if (!ObjectId.isValid(tutorialId + "")) return res.status(400).json({ error: "tutorialId is invalid" });
 
     try {
+        const user = await User.findById(id);
         const tutorial = await Tutorial.findById(tutorialId);
-        return res.status(200).json(tutorial.transform());
+
+        return res.status(200).json({
+            ...tutorial.transform(),
+            isSaved: user.savedTutorials.includes(tutorial._id),
+        });
     } catch (error) {
         return res.status(500).json(error);
     }
