@@ -24,13 +24,15 @@ const getTutorials = async (req, res) => {
             tutorials = await Tutorial.find({ tags: { $in: tags } })
                 .sort([[sort, order]])
                 .skip(skip)
-                .limit(limit);
+                .limit(limit)
+                .select("-content");
             total = await Tutorial.countDocuments({ tags: { $in: tags } });
         } else {
             tutorials = await Tutorial.find()
                 .sort([[sort, order]])
                 .skip(skip)
-                .limit(limit);
+                .limit(limit)
+                .select("-content");
             total = await Tutorial.countDocuments();
         }
         tutorials.forEach((tutorial, i) => (tutorials[i] = tutorial.transform()));
