@@ -46,7 +46,7 @@ io.on("connection", function (socket) {
                 text: message,
             });
             await newMessage.save();
-            io.to(roomId).emit("messageFromServer", { ...newMessage.transform(), user: user.transform(), room });
+            io.to(roomId).emit("messageFromServer", { ...newMessage.transform(), user: user.transform(), room: room.transform() });
         }
     });
 });
