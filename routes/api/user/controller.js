@@ -92,7 +92,7 @@ const updateUserInfo = async (req, res) => {
 
         const updatedUser = await User.findOneAndUpdate(
             { email },
-            { name, phoneNumber, dateOfBirth },
+            { name, phoneNumber, dateOfBirth: parseInt(dateOfBirth) },
             { returnOriginal: false }
         );
         const { id, userType } = updatedUser;
