@@ -21,8 +21,21 @@ const getRoomById = async (req, res) => {
     if (!ObjectId.isValid(roomId + "")) return res.status(400).json({ roomId: "members is invalid" });
 
     try {
-        const room = await Room.findById(roomId).populate(["members"]);
-        if (room && room.members.findIndex(userId) >= 0) {
+        const room = await Room.findOne({ _id: roomId, members: { $in: [userId] } })
+            .populate("members")
+            .select(["_id", "name", "members"]);
+
+        if (room && room.members.findIndex((mem) => mem._id == userId) >= 0) {
+            room.members.forEach((mem, i) => {
+                const transformedMem = mem.transform();
+
+                delete transformedMem.tasks;
+                delete transformedMem.savedTutorials;
+                delete transformedMem.password;
+
+                room.members[i] = transformedMem;
+            });
+
             return res.status(200).json(room.transform());
         } else {
             return res.status(400).json({ roomId: "room not found" });
@@ -43,16 +56,20 @@ const createRooms = async (req, res) => {
     });
 
     try {
-        const numberOfMembers = await User.countDocuments({ _id: { $in: members } });
-        if (numberOfMembers != members.length) errors.members = "members not found";
+        const foundMembers = await User.find({ _id: { $in: members } }).select(["_id", "userType", "email", "name"]);
+
+        if (foundMembers.length != members.length) errors.members = "members not found";
         if (name && typeof name != "string") errors.name = "name is invalid";
 
         const newRoom = new Room({
-            members,
+            members: foundMembers,
             name,
         });
         await newRoom.save();
-        return res.status(201).json(newRoom.transform());
+        foundMembers.forEach((mem, i) => (foundMembers[i] = mem.transform()));
+        return res
+            .status(201)
+            .json({ ...newRoom.transform(), members: foundMembers, numberOfMembers: foundMembers.length });
     } catch (error) {
         return res.status(500).json(error);
     }
