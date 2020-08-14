@@ -38,6 +38,8 @@ io.on("connection", function (socket) {
 
     socket.on("room", async function (data) {
         if (data.message && data.roomId) {
+            const user = await User.findById(data.userId);
+            const room = await Room.findById(data.roomId);
             const newMessage = new Message({
                 room: data.roomId,
                 sender: data.userId,
