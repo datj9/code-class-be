@@ -41,12 +41,12 @@ io.on("connection", function (socket) {
             const user = await User.findById(userId).select(["_id", "name", "email", "userType"]);
             const room = await Room.findById(roomId);
             const newMessage = new Message({
-                room: data.roomId,
-                sender: data.userId,
-                text: data.message,
+                room: roomId,
+                sender: userId,
+                text: message,
             });
             await newMessage.save();
-            io.to(data.roomId).emit("messageFromServer", { ...newMessage.transform(), user: user.transform(), room });
+            io.to(roomId).emit("messageFromServer", { ...newMessage.transform(), user: user.transform(), room });
         }
     });
 });
