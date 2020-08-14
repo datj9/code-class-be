@@ -53,7 +53,7 @@ const signUp = async (req, res) => {
             name,
             password: hash,
             phoneNumber,
-            dateOfBirth,
+            dateOfBirth: typeof dateOfBirth == "string" ? parseInt(dateOfBirth) : dateOfBirth,
         });
         await newUser.save();
         const { id, userType } = newUser;
@@ -92,11 +92,18 @@ const updateUserInfo = async (req, res) => {
 
         const updatedUser = await User.findOneAndUpdate(
             { email },
-            { name, phoneNumber, dateOfBirth: parseInt(dateOfBirth) },
+            { name, phoneNumber, dateOfBirth },
             { returnOriginal: false }
         );
         const { id, userType } = updatedUser;
-        const token = await createToken({ id, email, name, userType, phoneNumber, dateOfBirth });
+        const token = await createToken({
+            id,
+            email,
+            name,
+            userType,
+            phoneNumber,
+            dateOfBirth: typeof dateOfBirth == "string" ? parseInt(dateOfBirth) : dateOfBirth,
+        });
         return res.status(200).json({ token });
     } catch (error) {
         res.status(500).json({ error });
