@@ -16,11 +16,17 @@ const getRooms = async (req, res) => {
 
 const getRoomById = async (req, res) => {
     const { roomId } = req.params;
+    const { id: userId } = req.user;
+
     if (!ObjectId.isValid(roomId + "")) return res.status(400).json({ roomId: "members is invalid" });
 
     try {
         const room = await Room.findById(roomId).populate(["members"]);
-        return res.status(200).json(room.transform());
+        if (room && room.members.findIndex(userId) >= 0) {
+            return res.status(200).json(room.transform());
+        } else {
+            return res.status(400).json({ roomId: "room not found" });
+        }
     } catch (error) {
         return res.status(500).json(error);
     }
