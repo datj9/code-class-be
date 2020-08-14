@@ -36,17 +36,17 @@ io.on("connection", function (socket) {
         socket.join(data.roomId);
     });
 
-    socket.on("room", async function (data) {
-        if (data.message && data.roomId) {
-            const user = await User.findById(data.userId);
-            const room = await Room.findById(data.roomId);
+    socket.on("room", async function ({ message, userId, roomId }) {
+        if (message && roomId) {
+            const user = await User.findById(userId).select(["_id", "name", "email", "userType"]);
+            const room = await Room.findById(roomId);
             const newMessage = new Message({
                 room: data.roomId,
                 sender: data.userId,
                 text: data.message,
             });
             await newMessage.save();
-            io.to(data.roomId).emit("messageFromServer", { ...newMessage.transform(), user, room });
+            io.to(data.roomId).emit("messageFromServer", { ...newMessage.transform(), user: user.transform(), room });
         }
     });
 });
