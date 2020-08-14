@@ -1,9 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const roomController = require("./controller");
+const { authenticate } = require("../../../middlewares/auth");
 
-router.get("/", roomController.getRooms);
-router.get("/:roomId", roomController.getRoomById);
-router.post("/", roomController.createRooms);
+router.get("/", authenticate, roomController.getRooms);
+router.get("/:roomId", authenticate, roomController.getRoomById);
+router.post("/", authenticate, roomController.createRooms);
 
 module.exports = router;

@@ -23,7 +23,7 @@ const io = socketIO(server);
 //     },
 // };
 
-app.use(express.json({ extended: true, limit: "50mb" }));
+app.use(express.json({ extended: true, limit: "10mb" }));
 app.use("/api", cors(), require("./routes/api"));
 mongoose.connect(
     mongoURI,
