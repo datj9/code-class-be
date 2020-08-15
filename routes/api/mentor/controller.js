@@ -78,6 +78,8 @@ const updateMentor = async (req, res) => {
         "Front-end Developer|Back-end Developer|Web Developer|Mobile Developer|Full-stack Developer"
     );
 
+    if (!ObjectId.isValid(mentorId)) errors.mentorId = "mentorId is invalid";
+
     validatedFields.forEach((field) => {
         if (!req.body[field]) errors[field] = `${field} is required`;
     });
@@ -96,15 +98,31 @@ const updateMentor = async (req, res) => {
     if (Object.keys(errors).length > 0) return res.status(400).json(errors);
 
     try {
+        const mentor = await Mentor.findById(mentorId);
+        if (!mentor) return res.status(404).json({ error: "Mentor not found" });
         const user = await User.findById(userId);
         if (!user) return res.status(400).json({ userId: "userId is invalid" });
 
         await Mentor.updateOne({ _id: mentorId }, { user, numberOfYearsExperience, currentJob, specialities });
 
-        return res.status(200).json(newMentor.transform());
+        return res.status(200).json({ message: "Updated mentor successfully" });
     } catch (error) {
         return res.status(500).json(error);
     }
 };
 
-module.exports = { getMentors, getOneMentor, createMentor, updateMentor };
+const deleteMentor = async (req, res) => {
+    const { mentorId } = req.params;
+
+    if (!ObjectId.isValid(mentorId)) errors.mentorId = "mentorId is invalid";
+
+    try {
+        const mentor = await Mentor.findById(mentorId);
+        if (!mentor) return res.status(404).json({ error: "Mentor not found" });
+
+        await Mentor.deleteOne({ _id: mentorId });
+        return res.status(200).json({ message: "Deleted mentor successfully" });
+    } catch (error) {}
+};
+
+module.exports = { getMentors, getOneMentor, createMentor, updateMentor, deleteMentor };
