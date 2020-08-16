@@ -22,19 +22,19 @@ const getMentors = async (req, res) => {
 
 const getOneMentor = async (req, res) => {
     const { mentorId } = req.params;
-    let mentor;
+    let returnMentor;
     if (!ObjectId.isValid(mentorId)) return res.status(400).json({ mentorId: "mentorId is valid" });
 
     try {
-        mentor = await Mentor.findById(mentorId).populate("user");
+        const mentor = await Mentor.findById(mentorId).populate("user");
         if (!mentor) return res.status(404).json({ error: "Mentor not found" });
-        mentor = mentor.transform();
-        mentor.user = mentor.user.transform();
-        delete mentor.user.password;
-        delete mentor.user.savedTutorials;
-        delete mentor.user.tasks;
+        returnMentor = mentor.transform();
+        returnMentor.user = mentor.user.transform();
+        delete returnMentor.user.password;
+        delete returnMentor.user.savedTutorials;
+        delete returnMentor.user.tasks;
 
-        return res.status(200).json(mentor);
+        return res.status(200).json(returnMentor);
     } catch (error) {
         return res.status(500).json(error);
     }
@@ -66,7 +66,7 @@ const createMentor = async (req, res) => {
     if (Object.keys(errors).length > 0) return res.status(400).json(errors);
 
     try {
-        const user = await User.findById(userId);
+        const user = await User.findById(userId).select(["_id", "email", "name", "userType"]);
         if (!user) return res.status(400).json({ userId: "user not found" });
         const newMentor = new Mentor({
             user,
@@ -75,13 +75,10 @@ const createMentor = async (req, res) => {
             specialities,
         });
         await newMentor.save();
-        delete user.password;
-        delete user.savedTutorials;
-        delete user.tasks;
 
         return res.status(201).json({
             ...newMentor.transform(),
-            user,
+            user: user.transform(),
         });
     } catch (error) {
         if (error.code == 11000) return res.status(400).json({ userId: "this user has already been mentor" });
