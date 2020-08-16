@@ -11,7 +11,7 @@ const createToken = require("../../../utils/createToken");
 const updateUserInfo = async (req, res) => {
     const validatedFields = ["name"];
     const reqBody = req.body;
-    const { name, phoneNumber, dateOfBirth } = reqBody;
+    const { name, phoneNumber, dateOfBirth, profileImageURL } = reqBody;
     const { email } = req.user;
     const errors = {};
 
@@ -25,6 +25,9 @@ const updateUserInfo = async (req, res) => {
     }
     if (dateOfBirth && !validator.isDate(dayjs(dateOfBirth).format("YYYY/MM/DD"))) {
         errors.dateOfBirth = "dateOfBirth is invalid";
+    }
+    if (profileImageURL && !validator.isURL(profileImageURL + "")) {
+        errors.profileImageURL = "profileImageURL is invalid";
     }
     if (Object.keys(errors).length) return res.status(400).json(errors);
 

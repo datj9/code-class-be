@@ -26,7 +26,7 @@ const UserSchema = new mongoose.Schema({
         type: [TaskSchema],
         default: [],
     },
-    profilePhoto: String,
+    profileImageURL: String,
 });
 
 UserSchema.method("transform", function () {
