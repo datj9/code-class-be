@@ -63,7 +63,7 @@ const createMentor = async (req, res) => {
 
     try {
         const user = await User.findById(userId);
-        if (!user) return res.status(400).json({ userId: "userId is invalid" });
+        if (!user) return res.status(400).json({ userId: "this user has already been mentor" });
         const newMentor = new Mentor({
             user,
             numberOfYearsExperience,
