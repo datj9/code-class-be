@@ -4,13 +4,14 @@ const ObjectId = require("mongoose").Types.ObjectId;
 
 const getMentors = async (req, res) => {
     try {
-        const mentors = await Mentor.find().populate("user").select("-password -savedTutorials -tasks");
+        const mentors = await Mentor.find().populate("user");
 
         mentors.forEach((m, i) => {
             mentors[i] = m.transform();
-            delete m.user.password;
-            delete m.user.savedTutorials;
-            delete m.user.tasks;
+            mentors[i].user = m.user.transform();
+            delete mentors[i].user.password;
+            delete mentors[i].user.savedTutorials;
+            delete mentors[i].user.tasks;
         });
 
         return res.status(200).json(mentors);
@@ -80,7 +81,7 @@ const createMentor = async (req, res) => {
             user,
         });
     } catch (error) {
-        if(error.code == 11000) return res.status(400).json({ userId: "this user has already been mentor" });
+        if (error.code == 11000) return res.status(400).json({ userId: "this user has already been mentor" });
         return res.status(500).json(error);
     }
 };
