@@ -27,6 +27,7 @@ const getOneMentor = async (req, res) => {
     try {
         const mentor = await Mentor.findById(mentorId).populate("user");
         if (!mentor) return res.status(404).json({ error: "Mentor not found" });
+        mentor.user = mentor.user.transform();
         delete mentor.user.password;
         delete mentor.user.savedTutorials;
         delete mentor.user.tasks;
