@@ -4,9 +4,14 @@ const ObjectId = require("mongoose").Types.ObjectId;
 
 const getMentors = async (req, res) => {
     try {
-        const mentors = await Mentor.find();
+        const mentors = await Mentor.find().populate("user");
 
-        mentors.forEach((m, i) => (mentors[i] = m.transform()));
+        mentors.forEach((m, i) => {
+            mentors[i] = m.transform();
+            delete m.user.password;
+            delete m.user.savedTutorials;
+            delete m.user.tasks;
+        });
 
         return res.status(200).json(mentors);
     } catch (error) {
@@ -19,8 +24,11 @@ const getOneMentor = async (req, res) => {
     if (!ObjectId.isValid(mentorId)) return res.status(400).json({ mentorId: "mentorId is valid" });
 
     try {
-        const mentor = await Mentor.findById(mentorId);
+        const mentor = await Mentor.findById(mentorId).populate("user");
         if (!mentor) return res.status(404).json({ error: "Mentor not found" });
+        delete m.user.password;
+        delete m.user.savedTutorials;
+        delete m.user.tasks;
 
         return res.status(200).json(mentor.transform());
     } catch (error) {
@@ -63,7 +71,14 @@ const createMentor = async (req, res) => {
             specialities,
         });
         await newMentor.save();
-        return res.status(201).json(newMentor.transform());
+        delete user.password;
+        delete user.savedTutorials;
+        delete user.tasks;
+
+        return res.status(201).json({
+            ...newMentor.transform(),
+            user,
+        });
     } catch (error) {
         return res.status(500).json(error);
     }
