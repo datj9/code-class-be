@@ -2,7 +2,8 @@ const express = require("express");
 const router = express.Router();
 
 router.use("/tutorials", require("./tutorial"));
-router.use("/auth", require("./user"));
+router.use("/auth", require("./auth"));
+router.use("/users", require("./user"));
 router.use("/trackings", require("./trackingUser"));
 router.use("/tests", require("./test"));
 router.use("/questions", require("./question"));
