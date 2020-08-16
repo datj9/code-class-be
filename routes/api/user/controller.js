@@ -153,4 +153,4 @@ const searchUser = async (req, res) => {
     }
 };
 
-module.exports = { signIn, signUp, addTutorial, getSavedTutorials, updateUserInfo, changePassword, searchUser };
+module.exports = { addTutorial, getSavedTutorials, updateUserInfo, changePassword, searchUser };
