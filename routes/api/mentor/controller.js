@@ -4,7 +4,7 @@ const ObjectId = require("mongoose").Types.ObjectId;
 
 const getMentors = async (req, res) => {
     try {
-        const mentors = await Mentor.find().populate("user");
+        const mentors = await Mentor.find().populate("user").select("-password -savedTutorials -tasks");
 
         mentors.forEach((m, i) => {
             mentors[i] = m.transform();
