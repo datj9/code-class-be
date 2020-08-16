@@ -22,17 +22,19 @@ const getMentors = async (req, res) => {
 
 const getOneMentor = async (req, res) => {
     const { mentorId } = req.params;
+    let mentor;
     if (!ObjectId.isValid(mentorId)) return res.status(400).json({ mentorId: "mentorId is valid" });
 
     try {
-        const mentor = await Mentor.findById(mentorId).populate("user");
+        mentor = await Mentor.findById(mentorId).populate("user");
         if (!mentor) return res.status(404).json({ error: "Mentor not found" });
+        mentor = mentor.transform();
         mentor.user = mentor.user.transform();
         delete mentor.user.password;
         delete mentor.user.savedTutorials;
         delete mentor.user.tasks;
 
-        return res.status(200).json(mentor.transform());
+        return res.status(200).json(mentor);
     } catch (error) {
         return res.status(500).json(error);
     }
