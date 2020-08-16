@@ -140,7 +140,7 @@ const searchUser = async (req, res) => {
     try {
         if (email) {
             user = await User.findOne({ email }).select(["_id", "name", "email", "userType"]);
-            return res.status(200).json(user.transform());
+            return res.status(200).json([user.transform()]);
         } else {
             nameRegExp = RegExp(name, "gi");
             userList = await User.find({ name: nameRegExp });
