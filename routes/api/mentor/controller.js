@@ -20,6 +20,24 @@ const getMentors = async (req, res) => {
     }
 };
 
+const getActiveMentors = async (req, res) => {
+    try {
+        const mentors = await Mentor.find({ isActive: true }).populate("user");
+
+        mentors.forEach((m, i) => {
+            mentors[i] = m.transform();
+            mentors[i].user = m.user.transform();
+            delete mentors[i].user.password;
+            delete mentors[i].user.savedTutorials;
+            delete mentors[i].user.tasks;
+        });
+
+        return res.status(200).json(mentors);
+    } catch (error) {
+        return res.status(500).json(error);
+    }
+};
+
 const getOneMentor = async (req, res) => {
     const { mentorId } = req.params;
     let returnMentor;
@@ -28,6 +46,26 @@ const getOneMentor = async (req, res) => {
     try {
         const mentor = await Mentor.findById(mentorId).populate("user");
         if (!mentor) return res.status(404).json({ error: "Mentor not found" });
+        returnMentor = mentor.transform();
+        returnMentor.user = mentor.user.transform();
+        delete returnMentor.user.password;
+        delete returnMentor.user.savedTutorials;
+        delete returnMentor.user.tasks;
+
+        return res.status(200).json(returnMentor);
+    } catch (error) {
+        return res.status(500).json(error);
+    }
+};
+
+const getOneActiveMentor = async (req, res) => {
+    const { mentorId } = req.params;
+    let returnMentor;
+    if (!ObjectId.isValid(mentorId)) return res.status(400).json({ mentorId: "mentorId is valid" });
+
+    try {
+        const mentor = await Mentor.findById(mentorId).populate("user");
+        if (!mentor || !mentor.isActive) return res.status(404).json({ error: "Mentor not found" });
         returnMentor = mentor.transform();
         returnMentor.user = mentor.user.transform();
         delete returnMentor.user.password;
@@ -142,4 +180,12 @@ const deleteMentor = async (req, res) => {
     } catch (error) {}
 };
 
-module.exports = { getMentors, getOneMentor, createMentor, updateMentor, deleteMentor };
+module.exports = {
+    getMentors,
+    getActiveMentors,
+    getOneMentor,
+    getOneActiveMentor,
+    createMentor,
+    updateMentor,
+    deleteMentor,
+};
