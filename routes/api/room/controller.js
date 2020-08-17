@@ -26,7 +26,9 @@ const getRoomById = async (req, res) => {
             .populate("members")
             .select(["_id", "name", "members"]);
 
-        if (room && room.members.findIndex((mem) => mem._id == userId) >= 0) {
+        if (room) {
+            const messages = await Message.find({ room: room._id }).populate("sender");
+
             room.members.forEach((mem, i) => {
                 const transformedMem = mem.transform();
 
@@ -36,8 +38,12 @@ const getRoomById = async (req, res) => {
 
                 room.members[i] = transformedMem;
             });
+            messages.forEach((msg, i) => {
+                messages[i].sender = msg.sender.transform();
+                messages[i] = msg.transform();
+            });
 
-            return res.status(200).json(room.transform());
+            return res.status(200).json({ room: room.transform(), messages });
         } else {
             return res.status(400).json({ roomId: "room not found" });
         }
@@ -100,7 +106,13 @@ const connectMentor = async (req, res) => {
             await newRoom.save();
             return res.status(201).json({ room: newRoom.transform(), messages: [] });
         } else {
-            const messages = await Message.find({ room: foundRoom._id });
+            const messages = await Message.find({ room: foundRoom._id }).populate("sender");
+
+            messages.forEach((msg, i) => {
+                messages[i].sender = msg.sender.transform();
+                messages[i] = msg.transform();
+            });
+
             return res.status(200).json({ room: foundRoom.transform(), messages });
         }
     } catch (error) {}
