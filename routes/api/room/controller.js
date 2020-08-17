@@ -85,7 +85,7 @@ const connectMentor = async (req, res) => {
     });
 
     try {
-        const foundRoom = await Room.find().where("members").all(members);
+        const foundRoom = await Room.findOne({ members: { $all: members } });
 
         if (!foundRoom) {
             const foundMembers = await User.find({ _id: { $in: members } });
