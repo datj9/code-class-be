@@ -29,6 +29,11 @@ const getRoomById = async (req, res) => {
         if (room) {
             const messages = await Message.find({ room: room._id }).populate("sender");
 
+            messages.forEach((msg, i) => {
+                messages[i] = msg.transform();
+                messages[i].sender = msg.sender.transform();
+            });
+
             room.members.forEach((mem, i) => {
                 const transformedMem = mem.transform();
 
@@ -37,10 +42,6 @@ const getRoomById = async (req, res) => {
                 delete transformedMem.password;
 
                 room.members[i] = transformedMem;
-            });
-            messages.forEach((msg, i) => {
-                messages[i].sender = msg.sender.transform();
-                messages[i] = msg.transform();
             });
 
             return res.status(200).json({ room: room.transform(), messages });
@@ -109,8 +110,8 @@ const connectMentor = async (req, res) => {
             const messages = await Message.find({ room: foundRoom._id }).populate("sender");
 
             messages.forEach((msg, i) => {
-                messages[i].sender = msg.sender.transform();
                 messages[i] = msg.transform();
+                messages[i].sender = msg.sender.transform();
             });
 
             return res.status(200).json({ room: foundRoom.transform(), messages });

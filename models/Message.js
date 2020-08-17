@@ -26,6 +26,11 @@ MessageSchema.method("transform", function () {
     obj.id = obj._id;
     delete obj._id;
     delete obj.__v;
+    if (obj.sender.password) {
+        delete obj.sender.password;
+        delete obj.sender.tasks;
+        delete obj.sender.savedTutorials;
+    }
 
     return obj;
 });

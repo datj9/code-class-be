@@ -34,7 +34,11 @@ MentorSchema.method("transform", function () {
     obj.id = obj._id;
     delete obj._id;
     delete obj.__v;
-
+    if (obj.user.password) {
+        delete obj.user.password;
+        delete obj.user.tasks;
+        delete obj.user.savedTutorials;
+    }
     return obj;
 });
 
