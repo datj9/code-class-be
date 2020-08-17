@@ -35,6 +35,9 @@ UserSchema.method("transform", function () {
     obj.id = obj._id;
     delete obj._id;
     delete obj.__v;
+    delete obj.password;
+    delete obj.tasks;
+    delete obj.savedTutorials;
 
     return obj;
 });

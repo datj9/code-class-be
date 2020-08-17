@@ -70,8 +70,8 @@ const signIn = async (req, res) => {
 
         user = user.transform();
 
-        const { id, name, userType, phoneNumber, dateOfBirth } = user;
-        const token = await createToken({ id, email, name, userType, phoneNumber, dateOfBirth });
+        const { id, name, userType, phoneNumber, dateOfBirth, profileImageURL } = user;
+        const token = await createToken({ id, email, name, userType, phoneNumber, dateOfBirth, profileImageURL });
         return res.status(200).json({
             token,
         });

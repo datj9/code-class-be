@@ -9,9 +9,6 @@ const getMentors = async (req, res) => {
         mentors.forEach((m, i) => {
             mentors[i] = m.transform();
             mentors[i].user = m.user.transform();
-            delete mentors[i].user.password;
-            delete mentors[i].user.savedTutorials;
-            delete mentors[i].user.tasks;
         });
 
         return res.status(200).json(mentors);
@@ -27,9 +24,6 @@ const getActiveMentors = async (req, res) => {
         mentors.forEach((m, i) => {
             mentors[i] = m.transform();
             mentors[i].user = m.user.transform();
-            delete mentors[i].user.password;
-            delete mentors[i].user.savedTutorials;
-            delete mentors[i].user.tasks;
         });
 
         return res.status(200).json(mentors);
@@ -48,9 +42,6 @@ const getOneMentor = async (req, res) => {
         if (!mentor) return res.status(404).json({ error: "Mentor not found" });
         returnMentor = mentor.transform();
         returnMentor.user = mentor.user.transform();
-        delete returnMentor.user.password;
-        delete returnMentor.user.savedTutorials;
-        delete returnMentor.user.tasks;
 
         return res.status(200).json(returnMentor);
     } catch (error) {
@@ -68,9 +59,6 @@ const getOneActiveMentor = async (req, res) => {
         if (!mentor || !mentor.isActive) return res.status(404).json({ error: "Mentor not found" });
         returnMentor = mentor.transform();
         returnMentor.user = mentor.user.transform();
-        delete returnMentor.user.password;
-        delete returnMentor.user.savedTutorials;
-        delete returnMentor.user.tasks;
 
         return res.status(200).json(returnMentor);
     } catch (error) {

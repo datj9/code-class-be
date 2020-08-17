@@ -20,6 +20,7 @@ const updateUserInfo = async (req, res) => {
     }
     if (Object.keys(errors).length) return res.status(400).json(errors);
 
+    if (typeof name != "string") errors.name = "name is invalid";
     if (phoneNumber && !validator.isMobilePhone(phoneNumber + "", "vi-VN")) {
         errors.phoneNumber = "phoneNumber is invalid";
     }
@@ -37,12 +38,16 @@ const updateUserInfo = async (req, res) => {
             return res.status(400).json({ error: "User not found" });
         }
 
-        const updatedUser = await User.findOneAndUpdate(
+        await User.updateOne(
             { email },
-            { name, phoneNumber, dateOfBirth },
-            { returnOriginal: false }
+            {
+                name,
+                phoneNumber,
+                dateOfBirth: typeof dateOfBirth == "string" ? parseInt(dateOfBirth) : dateOfBirth,
+                profileImageURL,
+            }
         );
-        const { id, userType } = updatedUser;
+        const { id, userType } = user;
         const token = await createToken({
             id,
             email,
@@ -50,6 +55,7 @@ const updateUserInfo = async (req, res) => {
             userType,
             phoneNumber,
             dateOfBirth: typeof dateOfBirth == "string" ? parseInt(dateOfBirth) : dateOfBirth,
+            profileImageURL,
         });
         return res.status(200).json({ token });
     } catch (error) {
@@ -106,11 +112,20 @@ const addTutorial = async (req, res) => {
         if (!foundTutorial) return res.status(404).json({ error: "Tutorial not found" });
 
         const user = await User.findById(id).select("-password");
+        const { userType, email, name, phoneNumber, dateOfBirth, profileImageURL } = user;
         const foundIndex = user.savedTutorials.findIndex((tutorial) => tutorial == tutorialId);
         if (foundIndex == -1) {
             user.savedTutorials.push(tutorialId);
             await user.save();
-            const newToken = await createToken(user.transform());
+            const newToken = await createToken({
+                id,
+                userType,
+                email,
+                name,
+                phoneNumber,
+                dateOfBirth,
+                profileImageURL,
+            });
             return res.status(200).json({ token: newToken });
         } else {
             return res.status(400).json({ error: "Tutorial was saved" });
@@ -142,7 +157,7 @@ const searchUser = async (req, res) => {
 
     try {
         if (email) {
-            user = await User.findOne({ email }).select(["_id", "name", "email", "userType"]);
+            user = await User.findOne({ email });
             return res.status(200).json([user.transform()]);
         } else {
             nameRegExp = RegExp(name, "gi");
