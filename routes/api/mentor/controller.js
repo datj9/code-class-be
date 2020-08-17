@@ -180,6 +180,7 @@ const deleteMentor = async (req, res) => {
         if (!mentor) return res.status(404).json({ error: "Mentor not found" });
 
         await Mentor.deleteOne({ _id: mentorId });
+        await User.updateOne({ _id: mentor.user._id }, { userType: "client" });
         return res.status(200).json({ message: "Deleted mentor successfully" });
     } catch (error) {
         return res.status(500).json(error);
