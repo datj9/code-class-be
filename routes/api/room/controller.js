@@ -1,6 +1,7 @@
 const ObjectId = require("mongoose").Types.ObjectId;
 const { Room } = require("../../../models/Room");
 const { User } = require("../../../models/User");
+const { Message } = require("../../../models/Message");
 
 const getRooms = async (req, res) => {
     const { id } = req.user;
@@ -85,7 +86,7 @@ const connectMentor = async (req, res) => {
     });
 
     try {
-        const foundRoom = await Room.find().where("members").all(members);
+        const foundRoom = await Room.find({ members: { $all: members } });
 
         if (!foundRoom) {
             const foundMembers = await User.find({ _id: { $in: members } });
@@ -97,9 +98,10 @@ const connectMentor = async (req, res) => {
                 members,
             });
             await newRoom.save();
-            return res.status(201).json(newRoom.transform());
+            return res.status(201).json({ room: newRoom.transform(), messages: [] });
         } else {
-            return res.status(200).json(foundRoom.transform());
+            const messages = await Message.find({ room: foundRoom._id });
+            return res.status(200).json({ room: foundRoom.transform(), messages });
         }
     } catch (error) {}
 };
