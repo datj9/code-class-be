@@ -8,8 +8,13 @@ router.get("/:mentorId", authenticate, authorize(["admin"]), mentorController.ge
 router.get("/active-mentors", mentorController.getActiveMentors);
 router.get("/active-mentors/:mentorId", mentorController.getOneActiveMentor);
 router.post("/", authenticate, authorize(["admin"]), mentorController.createMentor);
-router.put("/:mentorId", authenticate, authorize(["admin"]), mentorController.updateMentor);
-router.patch("/update-active/:mentorId", authenticate, authorize(["admin"]), mentorController.updateIsActiveOfMentor);
+router.put("/:mentorId", authenticate, authorize(["admin", "mentor"]), mentorController.updateMentor);
+router.patch(
+    "/update-active/:mentorId",
+    authenticate,
+    authorize(["admin", "mentor"]),
+    mentorController.updateIsActiveOfMentor
+);
 router.delete("/:mentorId", authenticate, authorize(["admin"]), mentorController.deleteMentor);
 
 module.exports = router;

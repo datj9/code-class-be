@@ -104,7 +104,7 @@ const createMentor = async (req, res) => {
     if (Object.keys(errors).length > 0) return res.status(400).json(errors);
 
     try {
-        const user = await User.findById(userId).select(["_id", "email", "name", "userType"]);
+        const user = await User.findById(userId).select(["_id", "email", "name"]);
         if (!user) return res.status(400).json({ userId: "user not found" });
         const newMentor = new Mentor({
             user,
@@ -113,10 +113,14 @@ const createMentor = async (req, res) => {
             specialities,
         });
         await newMentor.save();
+        await User.updateOne({ _id: userId }, { userType: "mentor" });
 
         return res.status(201).json({
             ...newMentor.transform(),
-            user: user.transform(),
+            user: {
+                ...user.transform(),
+                userType: "mentor",
+            },
         });
     } catch (error) {
         if (error.code == 11000) return res.status(400).json({ userId: "this user has already been mentor" });
