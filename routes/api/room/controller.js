@@ -75,4 +75,33 @@ const createRooms = async (req, res) => {
     }
 };
 
-module.exports = { getRooms, getRoomById, createRooms };
+const connectMentor = async (req, res) => {
+    const { members } = req.body;
+
+    if (!members) return res.status(400).json({ members: "members is required" });
+    if (!Array.isArray(members)) return res.status(400).json({ members: "members is invalid" });
+    members.forEach((mem) => {
+        if (!ObjectId.isValid(mem + "")) return res.status(400).json({ members: "members is invalid" });
+    });
+
+    try {
+        const foundRoom = await Room.find().where("members").all(members);
+
+        if (!foundRoom) {
+            const foundMembers = await User.find({ _id: { $in: members } });
+            if (foundMembers.length != members.length) {
+                return res.status(400).json({ members: "members not found" });
+            }
+
+            const newRoom = new Room({
+                members,
+            });
+            await newRoom.save();
+            return res.status(201).json(newRoom.transform());
+        } else {
+            return res.status(200).json(foundRoom.transform());
+        }
+    } catch (error) {}
+};
+
+module.exports = { getRooms, getRoomById, createRooms, connectMentor };
