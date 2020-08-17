@@ -140,7 +140,7 @@ const updateMentor = async (req, res) => {
     });
     if (Object.keys(errors).length > 0) return res.status(400).json(errors);
 
-    if (!ObjectId.isValid(userId)) errors.userId = "userId is invalid";
+    if (!ObjectId.isValid(userId + "")) errors.userId = "userId is invalid";
     if (typeof numberOfYearsExperience != "number" || numberOfYearsExperience % 0.5 != 0) {
         errors.numberOfYearsExperience = "numberOfYearsExperience is invalid";
     }
@@ -169,7 +169,7 @@ const updateMentor = async (req, res) => {
 const deleteMentor = async (req, res) => {
     const { mentorId } = req.params;
 
-    if (!ObjectId.isValid(mentorId)) errors.mentorId = "mentorId is invalid";
+    if (!ObjectId.isValid(mentorId)) return res.status(400).json({ mentorId: "mentorId is invalid" });
 
     try {
         const mentor = await Mentor.findById(mentorId);
@@ -177,7 +177,29 @@ const deleteMentor = async (req, res) => {
 
         await Mentor.deleteOne({ _id: mentorId });
         return res.status(200).json({ message: "Deleted mentor successfully" });
-    } catch (error) {}
+    } catch (error) {
+        return res.status(500).json(error);
+    }
+};
+
+const updateIsActiveOfMentor = async (req, res) => {
+    const { mentorId } = req.params;
+    const { isActive } = req.body;
+    const errors = {};
+
+    if (!ObjectId.isValid(mentorId)) errors.mentorId = "mentorId is invalid";
+    if (typeof isActive != "boolean") errors.isActive = "isActive is invalid";
+    if (Object.keys(errors).length > 0) return res.status(400).json(errors);
+
+    try {
+        const mentor = await Mentor.findById(mentorId);
+        if (!mentor) return res.status(404).json({ error: "Mentor not found" });
+
+        await Mentor.updateOne({ _id: mentorId }, { isActive });
+        return res.status(200).json({ message: "Updated isActive successfully" });
+    } catch (error) {
+        return res.status(500).json(error);
+    }
 };
 
 module.exports = {
@@ -188,4 +210,5 @@ module.exports = {
     createMentor,
     updateMentor,
     deleteMentor,
+    updateIsActiveOfMentor,
 };
