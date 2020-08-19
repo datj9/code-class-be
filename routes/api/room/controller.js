@@ -4,10 +4,10 @@ const { User } = require("../../../models/User");
 const { Message } = require("../../../models/Message");
 
 const getRooms = async (req, res) => {
-    const { id } = req.user;
+    const { id: userId } = req.user;
 
     try {
-        const rooms = await Room.find({ members: { $in: [id] }, used: true });
+        const rooms = await Room.find({ members: { $in: [userId] }, used: true }).populate("members");
         const messages = [];
 
         rooms.forEach((room) => {
@@ -18,6 +18,8 @@ const getRooms = async (req, res) => {
         rooms.forEach((r, i) => {
             rooms[i] = r.transform();
             rooms[i].lastestMessage = foundMessages[i];
+            rooms[i].members.forEach((member, j) => (rooms[i].members[j] = member.transform()));
+            rooms[i].receiver = r.members.find((mem) => mem.id != userId);
         });
 
         return res.status(200).json(rooms);
