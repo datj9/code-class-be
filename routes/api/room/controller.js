@@ -22,9 +22,7 @@ const getRoomById = async (req, res) => {
     if (!ObjectId.isValid(roomId + "")) return res.status(400).json({ roomId: "members is invalid" });
 
     try {
-        const room = await Room.findOne({ _id: roomId, members: { $in: [userId] } })
-            .populate("members")
-            .select(["_id", "name", "members"]);
+        const room = await Room.findOne({ _id: roomId, members: { $in: [userId] } }).populate("members");
 
         if (room) {
             const messages = await Message.find({ room: room._id }).populate("sender");
@@ -36,11 +34,6 @@ const getRoomById = async (req, res) => {
 
             room.members.forEach((mem, i) => {
                 const transformedMem = mem.transform();
-
-                delete transformedMem.tasks;
-                delete transformedMem.savedTutorials;
-                delete transformedMem.password;
-
                 room.members[i] = transformedMem;
             });
 

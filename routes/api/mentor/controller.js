@@ -70,9 +70,10 @@ const createMentor = async (req, res) => {
     const { userId, numberOfYearsExperience, currentJob, specialities } = req.body;
     const errors = {};
     const validatedFields = ["userId", "numberOfYearsExperience", "currentJob", "specialities"];
-    const regExpTestJob = RegExp(
+    const regExpTestJob = new RegExp(
         "Front-end Developer|Back-end Developer|Web Developer|Mobile Developer|Full-stack Developer"
     );
+    const regExpTestSpeciality = new RegExp("React|Vue|Angular|JavaScript|TypeScript|NodeJS|Java");
 
     validatedFields.forEach((field) => {
         if (!req.body[field]) errors[field] = `${field} is required`;
@@ -89,6 +90,9 @@ const createMentor = async (req, res) => {
     if (!Array.isArray(specialities) || [...new Set(specialities)].length != specialities.length) {
         errors.specialities = "specialities is invalid";
     }
+    specialities.forEach((spec) => {
+        if (!regExpTestSpeciality.test(spec)) errors.specialities = "specialities is invalid";
+    });
     if (Object.keys(errors).length > 0) return res.status(400).json(errors);
 
     try {

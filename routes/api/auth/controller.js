@@ -41,7 +41,7 @@ const signUp = async (req, res) => {
             name,
             password: hash,
             phoneNumber,
-            dateOfBirth: typeof dateOfBirth == "string" ? parseInt(dateOfBirth) : dateOfBirth,
+            dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
         });
         await newUser.save();
         const { id, userType } = newUser;
