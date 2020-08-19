@@ -40,13 +40,23 @@ io.on("connection", function (socket) {
         if (message && roomId) {
             const user = await User.findById(userId).select(["_id", "name", "email", "userType"]);
             const room = await Room.findById(roomId);
-            const newMessage = new Message({
-                room: roomId,
-                sender: userId,
-                text: message,
-            });
-            await newMessage.save();
-            io.to(roomId).emit("messageFromServer", { ...newMessage.transform(), sender: user.transform(), room: room.transform() });
+
+            if (room && user) {
+                const newMessage = new Message({
+                    room: roomId,
+                    sender: userId,
+                    text: message,
+                });
+                await newMessage.save();
+                io.to(roomId).emit("messageFromServer", {
+                    ...newMessage.transform(),
+                    sender: user.transform(),
+                    room: room.transform(),
+                });
+            }
+            if (!room.used) {
+                await Room.updateOne({ _id: roomId }, { used: true });
+            }
         }
     });
 });

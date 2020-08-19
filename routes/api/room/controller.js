@@ -7,8 +7,19 @@ const getRooms = async (req, res) => {
     const { id } = req.user;
 
     try {
-        const rooms = await Room.find({ members: { $in: [id] } });
-        rooms.forEach((r, i) => (rooms[i] = r.transform()));
+        const rooms = await Room.find({ members: { $in: [id] }, used: true });
+        const messages = [];
+
+        rooms.forEach((room) => {
+            messages.push(Message.findOne({ room: room.id }).sort([["createdAt", -1]]));
+        });
+        const foundMessages = await Promise.all(messages);
+
+        rooms.forEach((r, i) => {
+            rooms[i] = r.transform();
+            rooms[i].lastestMessage = foundMessages[i];
+        });
+
         return res.status(200).json(rooms);
     } catch (error) {
         return res.status(500).json(error);

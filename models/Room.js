@@ -11,6 +11,12 @@ const RoomSchema = new mongoose.Schema({
     name: {
         type: String,
     },
+    used: {
+        // Room have at least one message or not
+        type: Boolean,
+        default: false,
+        required: true,
+    },
 });
 
 RoomSchema.method("transform", function () {
