@@ -43,7 +43,7 @@ const updateUserInfo = async (req, res) => {
             {
                 name,
                 phoneNumber,
-                dateOfBirth: typeof dateOfBirth == "string" ? parseInt(dateOfBirth) : dateOfBirth,
+                dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
                 profileImageURL,
             }
         );
@@ -54,7 +54,7 @@ const updateUserInfo = async (req, res) => {
             name,
             userType,
             phoneNumber,
-            dateOfBirth: typeof dateOfBirth == "string" ? parseInt(dateOfBirth) : dateOfBirth,
+            dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
             profileImageURL,
         });
         return res.status(200).json({ token });
