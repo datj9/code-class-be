@@ -11,7 +11,7 @@ const getRooms = async (req, res) => {
         const messages = [];
 
         rooms.forEach((room) => {
-            messages.push(Message.findOne({ room: room.id }).sort([["createdAt", -1]]));
+            messages.push(Message.findOne({ room: room._id }).sort([["createdAt", -1]]));
         });
         const foundMessages = await Promise.all(messages);
 

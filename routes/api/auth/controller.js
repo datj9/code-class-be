@@ -11,6 +11,7 @@ const signUp = async (req, res) => {
     const reqBody = req.body;
     const { email, name, password, confirmPassword, phoneNumber, dateOfBirth } = reqBody;
     const errors = {};
+    let shortName;
 
     for (let field of validatedFields) {
         if (!reqBody[field]) errors[field] = `${field} is required`;
@@ -35,10 +36,12 @@ const signUp = async (req, res) => {
             return res.status(400).json(errors);
         }
         const hash = await hashPass(password, 10);
+        shortName = name.trim().split(" ")[0][0] + name.trim().split(" ")[name.trim().split(" ").length - 1][0];
 
         const newUser = new User({
             email,
             name,
+            shortName,
             password: hash,
             phoneNumber,
             dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
@@ -56,6 +59,8 @@ const signIn = async (req, res) => {
     const validatedFields = ["email", "password"];
     const errors = {};
     const { email, password } = req.body;
+    let shortName;
+
     for (let field of validatedFields) {
         if (!req.body[field]) errors[field] = `${field} is required`;
     }
@@ -67,11 +72,24 @@ const signIn = async (req, res) => {
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(403).json({ password: "Password does not match" });
+        shortName = name.trim().split(" ")[0][0] + name.trim().split(" ")[name.trim().split(" ").length - 1][0];
 
         user = user.transform();
+        if (!user.shortName) {
+            await User.updateOne({ _id: user.id }, { shortName });
+        }
 
         const { id, name, userType, phoneNumber, dateOfBirth, profileImageURL } = user;
-        const token = await createToken({ id, email, name, userType, phoneNumber, dateOfBirth, profileImageURL });
+        const token = await createToken({
+            id,
+            email,
+            name,
+            userType,
+            phoneNumber,
+            dateOfBirth,
+            profileImageURL,
+            shortName,
+        });
         return res.status(200).json({
             token,
         });

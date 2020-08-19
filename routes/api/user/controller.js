@@ -14,6 +14,7 @@ const updateUserInfo = async (req, res) => {
     const { name, phoneNumber, dateOfBirth, profileImageURL } = reqBody;
     const { email } = req.user;
     const errors = {};
+    let shortName;
 
     for (let field of validatedFields) {
         if (!reqBody[field]) errors[field] = `${field} is required`;
@@ -37,11 +38,13 @@ const updateUserInfo = async (req, res) => {
         if (!user) {
             return res.status(400).json({ error: "User not found" });
         }
+        shortName = name.trim().split(" ")[0][0] + name.trim().split(" ")[name.trim().split(" ").length - 1][0];
 
         await User.updateOne(
             { email },
             {
                 name,
+                shortName,
                 phoneNumber,
                 dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
                 profileImageURL,
@@ -52,6 +55,7 @@ const updateUserInfo = async (req, res) => {
             id,
             email,
             name,
+            shortName,
             userType,
             phoneNumber,
             dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
