@@ -16,9 +16,9 @@ const getRooms = async (req, res) => {
         const foundMessages = await Promise.all(messages);
 
         rooms.forEach((r, i) => {
-            rooms[i] = r.transform();
-            rooms[i].lastestMessage = foundMessages[i];
             rooms[i].members.forEach((member, j) => (rooms[i].members[j] = member.transform()));
+            rooms[i] = r.transform();
+            rooms[i].lastestMessage = foundMessages[i].transform();
             rooms[i].receiver = r.members.find((mem) => mem.id != userId);
         });
 

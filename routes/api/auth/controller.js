@@ -72,11 +72,12 @@ const signIn = async (req, res) => {
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(403).json({ password: "Password does not match" });
-        shortName = name.trim().split(" ")[0][0] + name.trim().split(" ")[name.trim().split(" ").length - 1][0];
 
+        shortName =
+            user.name.trim().split(" ")[0][0] + user.name.trim().split(" ")[user.name.trim().split(" ").length - 1][0];
         user = user.transform();
         if (!user.shortName) {
-            await User.updateOne({ _id: user.id }, { shortName });
+            await User.updateOne({ email }, { shortName });
         }
 
         const { id, name, userType, phoneNumber, dateOfBirth, profileImageURL } = user;
