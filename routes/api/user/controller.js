@@ -65,7 +65,8 @@ const updateUserInfo = async (req, res) => {
             });
             return res.status(200).json({ token });
         } else {
-            const mentor = await Mentor.findOne({ user: id });
+            let mentor = await Mentor.findOne({ user: id });
+            mentor = mentor.transform();
             const token = await createToken({
                 id,
                 email,

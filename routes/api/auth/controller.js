@@ -110,7 +110,7 @@ const signIn = async (req, res) => {
                 dateOfBirth,
                 profileImageURL,
                 shortName,
-                ...mentor.transform(),
+                ...mentor,
             });
             return res.status(200).json({
                 token,
