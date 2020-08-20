@@ -7,7 +7,7 @@ const getRooms = async (req, res) => {
     const { id: userId } = req.user;
 
     try {
-        const rooms = await Room.find({ members: { $in: [userId] }, used: true }).populate("members");
+        const rooms = await Room.find({ members: { $in: [userId] }, used: true }).sort([["lastTimeWorked", -1]]).populate("members");
         const messages = [];
 
         rooms.forEach((room) => {
