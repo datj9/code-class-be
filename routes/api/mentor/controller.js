@@ -50,17 +50,13 @@ const getOneMentor = async (req, res) => {
 };
 
 const getOneActiveMentor = async (req, res) => {
-    const { mentorId, userId } = req.params;
-    let mentor;
+    const { mentorId } = req.params;
     let returnMentor;
     if (!ObjectId.isValid(mentorId + "")) return res.status(400).json({ mentorId: "mentorId is valid" });
 
     try {
-        if (mentorId) {
-            mentor = await Mentor.findById(mentorId).populate("user");
-        } else if (userId) {
-            mentor = await Mentor.findOne({ user: userId }).populate("user");
-        }
+        const mentor = await Mentor.findById(mentorId).populate("user");
+
         if (!mentor || !mentor.isActive) return res.status(404).json({ error: "Mentor not found" });
         returnMentor = mentor.transform();
         returnMentor.user = mentor.user.transform();
@@ -128,6 +124,7 @@ const createMentor = async (req, res) => {
 const updateMentor = async (req, res) => {
     const { userId, numberOfYearsExperience, currentJob, specialities } = req.body;
     const { mentorId } = req.params;
+    const reqUser = req.user;
     const errors = {};
     const validatedFields = ["userId", "numberOfYearsExperience", "currentJob", "specialities"];
     const regExpTestJob = RegExp(
@@ -159,7 +156,9 @@ const updateMentor = async (req, res) => {
 
     try {
         const mentor = await Mentor.findById(mentorId);
-        if (!mentor) return res.status(404).json({ error: "Mentor not found" });
+        if (!mentor || (reqUser.userType == "mentor" && mentor.user != reqUser.id))
+            return res.status(404).json({ error: "Mentor not found" });
+
         const user = await User.findById(userId);
         if (!user) return res.status(400).json({ userId: "userId is invalid" });
 

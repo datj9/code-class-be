@@ -5,6 +5,7 @@ const { promisify } = require("util");
 const hashPass = promisify(bcrypt.hash);
 const dayjs = require("dayjs");
 const createToken = require("../../../utils/createToken");
+const { Mentor } = require("../../../models/Mentor");
 
 const signUp = async (req, res) => {
     const validatedFields = ["email", "password", "confirmPassword", "name"];
@@ -79,21 +80,39 @@ const signIn = async (req, res) => {
         if (!user.shortName) {
             await User.updateOne({ email }, { shortName });
         }
-
-        const { id, name, userType, phoneNumber, dateOfBirth, profileImageURL } = user;
-        const token = await createToken({
-            id,
-            email,
-            name,
-            userType,
-            phoneNumber,
-            dateOfBirth,
-            profileImageURL,
-            shortName,
-        });
-        return res.status(200).json({
-            token,
-        });
+        if (user.userType != "mentor") {
+            const { id, name, userType, phoneNumber, dateOfBirth, profileImageURL } = user;
+            const token = await createToken({
+                id,
+                email,
+                name,
+                userType,
+                phoneNumber,
+                dateOfBirth,
+                profileImageURL,
+                shortName,
+            });
+            return res.status(200).json({
+                token,
+            });
+        } else {
+            const mentor = await Mentor.findOne({ user: user.id });
+            const { id, name, userType, phoneNumber, dateOfBirth, profileImageURL } = user;
+            const token = await createToken({
+                id,
+                email,
+                name,
+                userType,
+                phoneNumber,
+                dateOfBirth,
+                profileImageURL,
+                shortName,
+                ...mentor.transform(),
+            });
+            return res.status(200).json({
+                token,
+            });
+        }
     } catch (error) {
         return res.status(500).json(error);
     }
