@@ -20,7 +20,7 @@ const RoomSchema = new mongoose.Schema({
     lastTimeWorked: {
         type: Date,
         required: true,
-        default: Date.now(),
+        default: new Date(),
     },
 });
 
