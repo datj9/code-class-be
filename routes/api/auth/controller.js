@@ -102,6 +102,7 @@ const signIn = async (req, res) => {
             delete mentor.id;
             const { id, name, userType, phoneNumber, dateOfBirth, profileImageURL } = user;
             const token = await createToken({
+                ...mentor,
                 id,
                 email,
                 name,
@@ -110,7 +111,6 @@ const signIn = async (req, res) => {
                 dateOfBirth,
                 profileImageURL,
                 shortName,
-                ...mentor,
             });
             return res.status(200).json({
                 token,
