@@ -67,6 +67,7 @@ const updateUserInfo = async (req, res) => {
         } else {
             let mentor = await Mentor.findOne({ user: id });
             mentor = mentor.transform();
+            mentor.mentorId = mentor.id;
             const token = await createToken({
                 id,
                 email,
@@ -76,7 +77,7 @@ const updateUserInfo = async (req, res) => {
                 phoneNumber,
                 dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
                 profileImageURL,
-                ...mentor.transform(),
+                ...mentor,
             });
             return res.status(200).json({ token });
         }
