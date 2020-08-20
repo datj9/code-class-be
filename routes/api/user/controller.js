@@ -1,6 +1,7 @@
 const bcrypt = require("bcryptjs");
 const validator = require("validator");
 const { User } = require("../../../models/User");
+const { Mentor } = require("../../../models/Mentor");
 const { promisify } = require("util");
 const { Tutorial } = require("../../../models/Tutorial");
 const ObjectId = require("mongoose").Types.ObjectId;
@@ -51,17 +52,33 @@ const updateUserInfo = async (req, res) => {
             }
         );
         const { id, userType } = user;
-        const token = await createToken({
-            id,
-            email,
-            name,
-            shortName,
-            userType,
-            phoneNumber,
-            dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
-            profileImageURL,
-        });
-        return res.status(200).json({ token });
+        if (userType != "mentor") {
+            const token = await createToken({
+                id,
+                email,
+                name,
+                shortName,
+                userType,
+                phoneNumber,
+                dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
+                profileImageURL,
+            });
+            return res.status(200).json({ token });
+        } else {
+            const mentor = await Mentor.findOne({ user: id });
+            const token = await createToken({
+                id,
+                email,
+                name,
+                shortName,
+                userType,
+                phoneNumber,
+                dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
+                profileImageURL,
+                ...mentor.transform(),
+            });
+            return res.status(200).json({ token });
+        }
     } catch (error) {
         res.status(500).json({ error });
     }
