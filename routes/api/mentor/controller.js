@@ -135,7 +135,7 @@ const updateMentor = async (req, res) => {
     );
     const regExpTestSpeciality = new RegExp("React|Vue|Angular|JavaScript|TypeScript|NodeJS|Java");
 
-    if (!ObjectId.isValid(mentorId)) errors.mentorId = "mentorId is invalid";
+    if (!ObjectId.isValid(mentorId + "")) errors.mentorId = "mentorId is invalid";
 
     validatedFields.forEach((field) => {
         if (!req.body[field]) errors[field] = `${field} is required`;
