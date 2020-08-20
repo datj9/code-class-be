@@ -54,9 +54,8 @@ io.on("connection", function (socket) {
                     room: room.transform(),
                 });
             }
-            if (!room.used) {
-                await Room.updateOne({ _id: roomId }, { used: true });
-            }
+
+            await Room.updateOne({ _id: roomId }, { used: !room.used ? true : null, lastTimeWorked: Date.now() });
         }
     });
 });

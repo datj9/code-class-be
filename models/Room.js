@@ -17,6 +17,11 @@ const RoomSchema = new mongoose.Schema({
         default: false,
         required: true,
     },
+    lastTimeWorked: {
+        type: Date,
+        required: true,
+        default: Date.now(),
+    },
 });
 
 RoomSchema.method("transform", function () {
