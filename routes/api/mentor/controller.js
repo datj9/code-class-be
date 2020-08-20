@@ -35,7 +35,7 @@ const getActiveMentors = async (req, res) => {
 const getOneMentor = async (req, res) => {
     const { mentorId } = req.params;
     let returnMentor;
-    if (!ObjectId.isValid(mentorId)) return res.status(400).json({ mentorId: "mentorId is valid" });
+    if (!ObjectId.isValid(mentorId + "")) return res.status(400).json({ mentorId: "mentorId is valid" });
 
     try {
         const mentor = await Mentor.findById(mentorId).populate("user");
@@ -50,12 +50,17 @@ const getOneMentor = async (req, res) => {
 };
 
 const getOneActiveMentor = async (req, res) => {
-    const { mentorId } = req.params;
+    const { mentorId, userId } = req.params;
+    let mentor;
     let returnMentor;
-    if (!ObjectId.isValid(mentorId)) return res.status(400).json({ mentorId: "mentorId is valid" });
+    if (!ObjectId.isValid(mentorId + "")) return res.status(400).json({ mentorId: "mentorId is valid" });
 
     try {
-        const mentor = await Mentor.findById(mentorId).populate("user");
+        if (mentorId) {
+            mentor = await Mentor.findById(mentorId).populate("user");
+        } else if (userId) {
+            mentor = await Mentor.findOne({ user: userId }).populate("user");
+        }
         if (!mentor || !mentor.isActive) return res.status(404).json({ error: "Mentor not found" });
         returnMentor = mentor.transform();
         returnMentor.user = mentor.user.transform();
@@ -128,6 +133,7 @@ const updateMentor = async (req, res) => {
     const regExpTestJob = RegExp(
         "Front-end Developer|Back-end Developer|Web Developer|Mobile Developer|Full-stack Developer"
     );
+    const regExpTestSpeciality = new RegExp("React|Vue|Angular|JavaScript|TypeScript|NodeJS|Java");
 
     if (!ObjectId.isValid(mentorId)) errors.mentorId = "mentorId is invalid";
 
@@ -146,6 +152,9 @@ const updateMentor = async (req, res) => {
     if (!Array.isArray(specialities) || [...new Set(specialities)].length != specialities.length) {
         errors.specialities = "specialities is invalid";
     }
+    specialities.forEach((spec) => {
+        if (!regExpTestSpeciality.test(spec)) errors.specialities = "specialities is invalid";
+    });
     if (Object.keys(errors).length > 0) return res.status(400).json(errors);
 
     try {
@@ -165,7 +174,7 @@ const updateMentor = async (req, res) => {
 const deleteMentor = async (req, res) => {
     const { mentorId } = req.params;
 
-    if (!ObjectId.isValid(mentorId)) return res.status(400).json({ mentorId: "mentorId is invalid" });
+    if (!ObjectId.isValid(mentorId + "")) return res.status(400).json({ mentorId: "mentorId is invalid" });
 
     try {
         const mentor = await Mentor.findById(mentorId);
@@ -184,7 +193,7 @@ const updateIsActiveOfMentor = async (req, res) => {
     const { isActive } = req.body;
     const errors = {};
 
-    if (!ObjectId.isValid(mentorId)) errors.mentorId = "mentorId is invalid";
+    if (!ObjectId.isValid(mentorId + "")) errors.mentorId = "mentorId is invalid";
     if (typeof isActive != "boolean") errors.isActive = "isActive is invalid";
     if (Object.keys(errors).length > 0) return res.status(400).json(errors);
 
