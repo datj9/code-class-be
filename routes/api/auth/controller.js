@@ -99,7 +99,7 @@ const signIn = async (req, res) => {
             let mentor = await Mentor.findOne({ user: user.id });
             mentor = mentor.transform();
             mentor.mentorId = mentor.id;
-            delete mentor.id;
+
             const { id, name, userType, phoneNumber, dateOfBirth, profileImageURL } = user;
             const token = await createToken({
                 ...mentor,
