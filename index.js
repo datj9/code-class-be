@@ -39,9 +39,11 @@ io.on("connection", function (socket) {
     socket.on("room", async function ({ message, userId, roomId }) {
         if (message && roomId) {
             const user = await User.findById(userId).select(["_id", "name", "email", "userType"]);
-            const room = await Room.findById(roomId);
+            const room = await Room.findById(roomId).populate("members");
 
             if (room && user) {
+                room.members.forEach((mem, i) => (room.members[i] = mem.transform()));
+                const receiver = room.members.find((mem) => mem.id != userId);
                 const newMessage = new Message({
                     room: roomId,
                     sender: userId,
@@ -51,6 +53,7 @@ io.on("connection", function (socket) {
                 io.to(roomId).emit("messageFromServer", {
                     ...newMessage.transform(),
                     sender: user.transform(),
+                    receiver,
                     room: room.transform(),
                 });
             }

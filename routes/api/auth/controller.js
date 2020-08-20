@@ -49,7 +49,7 @@ const signUp = async (req, res) => {
         });
         await newUser.save();
         const { id, userType } = newUser;
-        const token = await createToken({ id, email, name, userType, phoneNumber, dateOfBirth });
+        const token = await createToken({ id, email, name, userType, phoneNumber, dateOfBirth, shortName });
         return res.status(201).json({ token });
     } catch (error) {
         res.status(500).json({ error });
