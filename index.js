@@ -38,7 +38,7 @@ io.on("connection", function (socket) {
 
     socket.on("room", async function ({ message, userId, roomId }) {
         if (message && roomId) {
-            const user = await User.findById(userId).select(["_id", "name", "email", "userType"]);
+            const user = await User.findById(userId);
             const room = await Room.findById(roomId).populate("members");
 
             if (room && user) {
