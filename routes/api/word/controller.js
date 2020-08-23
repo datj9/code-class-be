@@ -1,5 +1,6 @@
 const Word = require("../../../models/Word");
 const isInt = require("validator/lib/isInt");
+const isURL = require("validator/lib/isURL");
 const ObjectId = require("mongoose").Types.ObjectId;
 const axios = require("axios");
 
@@ -48,8 +49,6 @@ const getWordById = async (req, res) => {
 const searchWord = async (req, res) => {
     const { word } = req.params;
 
-    if (typeof word != "string") return res.status(400).json({ error: "word must be string" });
-
     try {
         const necessaryDataFromWordsAPI = ["definitions", "synonyms", "antonyms", "examples"];
         const pronunciationRes = await axiosInstance.get(`/words/${word}/pronunciation`);
@@ -73,7 +72,7 @@ const searchWord = async (req, res) => {
 };
 
 const createWord = async (req, res) => {
-    const { text, pronunciation, definitions, synonyms, antonyms, examples } = req.body;
+    const { text, pronunciation, definitions, synonyms, antonyms, examples, attachmentImage } = req.body;
     const { id } = req.user;
     const validatedFields = ["text", "pronunciation", "definitions"];
     const errors = {};
@@ -89,6 +88,7 @@ const createWord = async (req, res) => {
     if (!Array.isArray(synonyms)) errors.synonyms = "synonyms is invalid";
     if (!Array.isArray(annonyms)) errors.annonyms = "annonyms is invalid";
     if (!Array.isArray(examples)) errors.examples = "examples is invalid";
+    if (attachmentImage && !isURL(attachmentImage)) errors.attachmentImage = "attachmentImage is invalid";
     if (Object.keys(errors).length > 0) return res.status(400).json(errors);
 
     try {
