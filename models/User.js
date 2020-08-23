@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const { TaskSchema } = require("./Task");
+const { WordSchema } = require("./Word");
 
 const UserSchema = new mongoose.Schema({
     email: {
@@ -25,12 +26,12 @@ const UserSchema = new mongoose.Schema({
         type: String,
         default: "client",
     },
+    profileImageURL: String,
     savedTutorials: [{ type: mongoose.Types.ObjectId, ref: "Tutorial" }],
     tasks: {
         type: [TaskSchema],
         default: [],
     },
-    profileImageURL: String,
 });
 
 UserSchema.method("transform", function () {

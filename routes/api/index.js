@@ -10,5 +10,6 @@ router.use("/questions", require("./question"));
 router.use("/tasks", require("./task"));
 router.use("/rooms", require("./room"));
 router.use("/mentors", require("./mentor"));
+router.use("/words", require("./word"));
 
 module.exports = router;
