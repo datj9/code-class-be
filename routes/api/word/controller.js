@@ -88,7 +88,7 @@ const createWord = async (req, res) => {
     if (!Array.isArray(synonyms)) errors.synonyms = "synonyms is invalid";
     if (!Array.isArray(annonyms)) errors.annonyms = "annonyms is invalid";
     if (!Array.isArray(examples)) errors.examples = "examples is invalid";
-    if (attachmentImage && !isURL(attachmentImage)) errors.attachmentImage = "attachmentImage is invalid";
+    if (attachmentImage && !isURL(attachmentImage + "")) errors.attachmentImage = "attachmentImage is invalid";
     if (Object.keys(errors).length > 0) return res.status(400).json(errors);
 
     try {
