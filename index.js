@@ -1,17 +1,13 @@
 const express = require("express");
 const mongoose = require("mongoose");
-const socketIO = require("socket.io");
 const http = require("http");
 const cors = require("cors");
 const { mongoURI } = require("./config");
-const { Room } = require("./models/Room");
-const { User } = require("./models/User");
-const { Message } = require("./models/Message");
+const runSocket = require("./helpers/socket");
+
 const port = process.env.PORT || 5000;
 const app = express();
 const server = http.createServer(app);
-const io = socketIO(server);
-
 // const whitelist = ["https://codeclass.vercel.app", "https://codeclassadmin.vercel.app"];
 // const corsOptions = {
 //     origin: function (origin, callback) {
@@ -22,6 +18,7 @@ const io = socketIO(server);
 //         }
 //     },
 // };
+runSocket(server);
 
 app.use(express.json({ extended: true, limit: "10mb" }));
 app.use("/api", cors(), require("./routes/api"));
@@ -30,41 +27,5 @@ mongoose.connect(
     { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true, useFindAndModify: false },
     () => console.log("Connected to MongoDB successfully")
 );
-
-io.on("connection", function (socket) {
-    socket.on("joinRoom", function (data) {
-        socket.join(data.roomId);
-    });
-
-    socket.on("room", async function ({ message, userId, roomId }) {
-        if (message && roomId) {
-            const user = await User.findById(userId);
-            const room = await Room.findById(roomId).populate("members");
-
-            if (room && user) {
-                room.members.forEach((mem, i) => (room.members[i] = mem.transform()));
-                const receiver = room.members.find((mem) => mem.id != userId);
-                const newMessage = new Message({
-                    room: roomId,
-                    sender: userId,
-                    text: message,
-                });
-                await newMessage.save();
-                io.to(roomId).emit("messageFromServer", {
-                    ...newMessage.transform(),
-                    sender: user.transform(),
-                    receiver,
-                    room: room.transform(),
-                });
-            }
-
-            if (room.used) {
-                await Room.updateOne({ _id: roomId }, { lastTimeWorked: new Date() });
-            } else {
-                await Room.updateOne({ _id: roomId }, { used: true, lastTimeWorked: new Date() });
-            }
-        }
-    });
-});
 
 server.listen(port, () => console.log(`Server is running on port ${port}`));
