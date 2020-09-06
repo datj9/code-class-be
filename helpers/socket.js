@@ -1,6 +1,6 @@
-const { Room } = require("./models/Room");
-const { User } = require("./models/User");
-const { Message } = require("./models/Message");
+const { Room } = require("../models/Room");
+const { User } = require("../models/User");
+const { Message } = require("../models/Message");
 const socketIO = require("socket.io");
 
 const runSocket = (server) => {
