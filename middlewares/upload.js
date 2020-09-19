@@ -26,7 +26,7 @@ const upload = multer({
         },
     }),
     limits: {
-        fileSize: 3 * Math.pow(1024, 2),
+        fileSize: 5 * Math.pow(1024, 2),
     },
     fileFilter: function (req, file, callback) {
         var ext = path.extname(file.originalname).toLowerCase();
