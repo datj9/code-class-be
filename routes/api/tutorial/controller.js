@@ -66,6 +66,7 @@ const getTutorialById = async (req, res) => {
 
 const createTutorial = async (req, res) => {
     const { title, description, thumbnailUrl, content, difficultyLevel, readingTime, tags } = req.body;
+    const regExpTestTags = new RegExp("React|Vue|Angular|JavaScript|TypeScript|NodeJS|Java");
     const errors = {};
 
     if (!title) errors.title = "title is required";
@@ -92,6 +93,10 @@ const createTutorial = async (req, res) => {
     if (typeof readingTime != "number" || readingTime < 1) errors.readingTime = "readingTime is invalid";
     if (!Array.isArray(tags)) errors.tags = "tags is invalid";
     if (Object.keys(errors).length > 0) return res.status(400).json(errors);
+    
+    regExpTestTags.forEach((tag) => {
+        if (regExpTestTags.test(tag) == false) return res.status(400).json({ tags: "tags is invalid" });
+    });
 
     const newTutorial = new Tutorial({
         title,
