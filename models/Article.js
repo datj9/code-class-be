@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
+const { TechnologySchema } = require("./Technology");
 
-const TutorialSchema = new mongoose.Schema(
+const ArticleSchema = new mongoose.Schema(
     {
         title: {
             type: String,
@@ -18,6 +19,11 @@ const TutorialSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
+        author: {
+            type: mongoose.Types.ObjectId,
+            ref: "User",
+            required: true,
+        },
         views: {
             type: Number,
             default: 0,
@@ -29,15 +35,21 @@ const TutorialSchema = new mongoose.Schema(
         },
         technologies: [
             {
-                type: [mongoose.Types.ObjectId],
+                type: mongoose.Schema.Types.ObjectId,
                 ref: "Technology",
             },
         ],
+
+        isTutorial: {
+            type: Boolean,
+            required: true,
+            default: false,
+        },
     },
     { timestamps: true }
 );
 
-TutorialSchema.method("transform", function () {
+ArticleSchema.method("transform", function () {
     const obj = this.toObject();
 
     obj.id = obj._id;
@@ -47,9 +59,9 @@ TutorialSchema.method("transform", function () {
     return obj;
 });
 
-const Tutorial = new mongoose.model("Tutorial", TutorialSchema);
+const Article = new mongoose.model("Article", ArticleSchema);
 
 module.exports = {
-    TutorialSchema,
-    Tutorial,
+    ArticleSchema,
+    Article,
 };

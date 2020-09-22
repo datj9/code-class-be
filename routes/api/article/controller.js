@@ -1,4 +1,4 @@
-const { Tutorial } = require("../../../models/Tutorial");
+const { Article } = require("../../../models/Article");
 const { User } = require("../../../models/User");
 const { TrackingUser } = require("../../../models/TrackingUser");
 const isURL = require("validator/lib/isURL");
@@ -6,8 +6,8 @@ const ObjectId = require("mongoose").Types.ObjectId;
 const isInt = require("validator/lib/isInt");
 const isIP = require("validator/lib/isIP");
 
-const getTutorials = async (req, res) => {
-    let tutorials;
+const getArticles = async (req, res) => {
+    let articles;
     let total;
     const { pageSize, pageIndex, tags: tagsReq, sortBy, orderBy } = req.query;
     const limit = isInt(pageSize + "") ? parseInt(pageSize) : 8;
@@ -21,42 +21,42 @@ const getTutorials = async (req, res) => {
 
     try {
         if (tags && tags.length > 0) {
-            tutorials = await Tutorial.find({ tags: { $in: tags } })
+            articles = await Article.find({ tags: { $in: tags } })
                 .sort([[sort, order]])
                 .skip(skip)
                 .limit(limit)
                 .select("-content");
-            total = await Tutorial.countDocuments({ tags: { $in: tags } });
+            total = await Article.countDocuments({ tags: { $in: tags } });
         } else {
-            tutorials = await Tutorial.find()
+            articles = await Article.find()
                 .sort([[sort, order]])
                 .skip(skip)
                 .limit(limit)
                 .select("-content");
-            total = await Tutorial.countDocuments();
+            total = await Article.countDocuments();
         }
-        tutorials.forEach((tutorial, i) => (tutorials[i] = tutorial.transform()));
-        return res.status(200).json({ tutorials, total });
+        articles.forEach((article, i) => (articles[i] = article.transform()));
+        return res.status(200).json({ articles, total });
     } catch (error) {
         return res.status(500).json(error);
     }
 };
 
-const getTutorialById = async (req, res) => {
-    const { tutorialId } = req.params;
+const getArticleById = async (req, res) => {
+    const { articleId } = req.params;
     const { id } = req.user;
     let user;
 
-    if (!ObjectId.isValid(tutorialId + "")) return res.status(400).json({ error: "tutorialId is invalid" });
+    if (!ObjectId.isValid(articleId + "")) return res.status(400).json({ error: "articleId is invalid" });
     try {
         if (id) {
             user = await User.findById(id);
         }
-        const tutorial = await Tutorial.findById(tutorialId);
-        const isSaved = user ? user.savedTutorials.includes(tutorialId) : false;
+        const article = await Article.findById(articleId);
+        const isSaved = user ? user.savedArticles.includes(articleId) : false;
 
         return res.status(200).json({
-            ...tutorial.transform(),
+            ...article.transform(),
             isSaved,
         });
     } catch (error) {
@@ -64,7 +64,7 @@ const getTutorialById = async (req, res) => {
     }
 };
 
-const createTutorial = async (req, res) => {
+const createArticle = async (req, res) => {
     const { title, description, thumbnailUrl, content, difficultyLevel, readingTime, tags } = req.body;
     const regExpTestTags = new RegExp("React|Vue|Angular|JavaScript|TypeScript|NodeJS|Java");
     const errors = {};
@@ -93,12 +93,12 @@ const createTutorial = async (req, res) => {
     if (typeof readingTime != "number" || readingTime < 1) errors.readingTime = "readingTime is invalid";
     if (!Array.isArray(tags)) errors.tags = "tags is invalid";
     if (Object.keys(errors).length > 0) return res.status(400).json(errors);
-    
+
     regExpTestTags.forEach((tag) => {
         if (regExpTestTags.test(tag) == false) return res.status(400).json({ tags: "tags is invalid" });
     });
 
-    const newTutorial = new Tutorial({
+    const newArticle = new Article({
         title,
         description,
         thumbnailUrl,
@@ -109,16 +109,16 @@ const createTutorial = async (req, res) => {
     });
 
     try {
-        await newTutorial.save();
-        return res.status(201).json(newTutorial.transform());
+        await newArticle.save();
+        return res.status(201).json(newArticle.transform());
     } catch (error) {
         return res.status(500).json(error);
     }
 };
 
-const updateTutorial = async (req, res) => {
+const updateArticle = async (req, res) => {
     const { title, description, thumbnailUrl, content, difficultyLevel, readingTime, tags } = req.body;
-    const { tutorialId } = req.params;
+    const { articleId } = req.params;
     const errors = {};
 
     if (!title) errors.title = "title is required";
@@ -147,49 +147,49 @@ const updateTutorial = async (req, res) => {
     if (Object.keys(errors).length > 0) return res.status(400).json(errors);
 
     try {
-        const foundTutorial = await Tutorial.findById(tutorialId);
-        if (!foundTutorial) return res.status(404).json({ error: "Tutorial not found" });
-        const tutorial = await Tutorial.findOneAndUpdate(
-            { _id: tutorialId },
+        const foundArticle = await Article.findById(articleId);
+        if (!foundArticle) return res.status(404).json({ error: "Article not found" });
+        const article = await Article.findOneAndUpdate(
+            { _id: articleId },
             { title, description, thumbnailUrl, content, difficultyLevel, readingTime, tags }
         );
-        return res.status(200).json(tutorial.transform());
+        return res.status(200).json(article.transform());
     } catch (error) {
         return res.status(500).json(error);
     }
 };
 
 const increaseView = async (req, res) => {
-    const { tutorialId, ip, country, city } = req.body;
+    const { articleId, ip, country, city } = req.body;
     const errors = {};
 
-    if (!ObjectId.isValid(tutorialId + "")) errors.tutorialId = "tutorialId is invalid";
+    if (!ObjectId.isValid(articleId + "")) errors.articleId = "articleId is invalid";
     if (!isIP(ip)) errors.ip = "ip is invalid";
     if (country && typeof country != "string") errors.country = "country is invalid";
     if (city && typeof city != "string") errors.city = "city is invalid";
     if (Object.keys(errors).length > 0) return res.status(400).json(errors);
 
     try {
-        const foundTracking = await TrackingUser.findOne({ ip, tutorial: tutorialId }).populate("tutorial");
+        const foundTracking = await TrackingUser.findOne({ ip, article: articleId }).populate("article");
 
         if (!foundTracking) {
             const newTracking = new TrackingUser({
                 ip,
-                tutorial: tutorialId,
+                article: articleId,
                 country,
                 city,
             });
             await newTracking.save();
-            await Tutorial.updateOne({ _id: tutorialId }, { $inc: { views: 1 } });
+            await Article.updateOne({ _id: articleId }, { $inc: { views: 1 } });
 
             return res.status(201).json({
                 message: "Created successfully",
             });
-        } else if ((Date.now() - foundTracking.lastTimeSeen) / 1000 / 60 > foundTracking.tutorial.readingTime / 8) {
+        } else if ((Date.now() - foundTracking.lastTimeSeen) / 1000 / 60 > foundTracking.article.readingTime / 8) {
             foundTracking.viwes = ++foundTracking.views;
             foundTracking.lastTimeSeen = Date.now();
             await foundTracking.save();
-            await Tutorial.updateOne({ _id: tutorialId }, { $inc: { views: 1 } });
+            await Article.updateOne({ _id: articleId }, { $inc: { views: 1 } });
 
             return res.status(200).json({ message: "Updated successfully" });
         } else {
@@ -203,14 +203,14 @@ const increaseView = async (req, res) => {
     }
 };
 
-const deleteTutorial = async (req, res) => {
-    const { tutorialId } = req.params;
-    if (!ObjectId.isValid(tutorialId)) return res.status(400).json({ error: "tutorialId is invalid" });
+const deleteArticle = async (req, res) => {
+    const { articleId } = req.params;
+    if (!ObjectId.isValid(articleId)) return res.status(400).json({ error: "articleId is invalid" });
 
     try {
-        const tutorial = await Tutorial.findById(tutorialId);
-        if (!tutorial) return res.status(400).json({ error: "Tutorial not found" });
-        await Tutorial.deleteOne({ _id: tutorialId });
+        const article = await Article.findById(articleId);
+        if (!article) return res.status(400).json({ error: "Article not found" });
+        await Article.deleteOne({ _id: articleId });
         return res.status(200).json({ message: "Deleted successfully" });
     } catch (error) {
         return res.status(500).json(error);
@@ -218,10 +218,10 @@ const deleteTutorial = async (req, res) => {
 };
 
 module.exports = {
-    getTutorials,
-    getTutorialById,
-    createTutorial,
-    updateTutorial,
+    getArticles,
+    getArticleById,
+    createArticle,
+    updateArticle,
     increaseView,
-    deleteTutorial,
+    deleteArticle,
 };

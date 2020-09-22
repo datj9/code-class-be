@@ -7,9 +7,9 @@ const TrackingUserSchema = new mongoose.Schema({
     },
     country: String,
     city: String,
-    tutorial: {
+    article: {
         type: mongoose.Types.ObjectId,
-        ref: "Tutorial",
+        ref: "Article",
         required: true,
     },
     views: {
