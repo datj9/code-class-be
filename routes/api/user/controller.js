@@ -3,7 +3,7 @@ const validator = require("validator");
 const { User } = require("../../../models/User");
 const { Mentor } = require("../../../models/Mentor");
 const { promisify } = require("util");
-const { Tutorial } = require("../../../models/Tutorial");
+const { Article } = require("../../../models/Article");
 const ObjectId = require("mongoose").Types.ObjectId;
 const hashPass = promisify(bcrypt.hash);
 const dayjs = require("dayjs");
@@ -125,21 +125,21 @@ const changePassword = async (req, res) => {
     }
 };
 
-const addTutorial = async (req, res) => {
+const addArticle = async (req, res) => {
     const { tutorialId } = req.query;
     const { id } = req.user;
 
     if (!ObjectId.isValid(tutorialId)) return res.status(400).json({ error: "tutorialId is invalid" });
 
     try {
-        const foundTutorial = await Tutorial.findById(tutorialId);
-        if (!foundTutorial) return res.status(404).json({ error: "Tutorial not found" });
+        const foundArticle = await Article.findById(tutorialId);
+        if (!foundArticle) return res.status(404).json({ error: "Article not found" });
 
         const user = await User.findById(id).select("-password");
         const { userType, email, name, phoneNumber, dateOfBirth, profileImageURL } = user;
-        const foundIndex = user.savedTutorials.findIndex((tutorial) => tutorial == tutorialId);
+        const foundIndex = user.savedArticles.findIndex((tutorial) => tutorial == tutorialId);
         if (foundIndex == -1) {
-            user.savedTutorials.push(tutorialId);
+            user.savedArticles.push(tutorialId);
             await user.save();
             const newToken = await createToken({
                 id,
@@ -152,20 +152,20 @@ const addTutorial = async (req, res) => {
             });
             return res.status(200).json({ token: newToken });
         } else {
-            return res.status(400).json({ error: "Tutorial was saved" });
+            return res.status(400).json({ error: "Article was saved" });
         }
     } catch (error) {
         return res.status(500).json(error);
     }
 };
 
-const getSavedTutorials = async (req, res) => {
+const getSavedArticles = async (req, res) => {
     const { id } = req.user;
 
     try {
-        const user = await User.findById(id).select(["savedTutorials"]).populate("savedTutorials");
-        user.savedTutorials.forEach((tutorial, i) => (user.savedTutorials[i] = tutorial.transform()));
-        return res.status(200).json(user.savedTutorials);
+        const user = await User.findById(id).select(["savedArticles"]).populate("savedArticles");
+        user.savedArticles.forEach((tutorial, i) => (user.savedArticles[i] = tutorial.transform()));
+        return res.status(200).json(user.savedArticles);
     } catch (error) {
         return res.status(500).json(error);
     }
@@ -195,4 +195,4 @@ const searchUser = async (req, res) => {
     }
 };
 
-module.exports = { addTutorial, getSavedTutorials, updateUserInfo, changePassword, searchUser };
+module.exports = { addArticle, getSavedArticles, updateUserInfo, changePassword, searchUser };
