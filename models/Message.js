@@ -29,7 +29,7 @@ MessageSchema.method("transform", function () {
     if (obj.sender.password) {
         delete obj.sender.password;
         delete obj.sender.tasks;
-        delete obj.sender.savedTutorials;
+        delete obj.sender.savedArticles;
     }
 
     return obj;

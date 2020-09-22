@@ -126,20 +126,20 @@ const changePassword = async (req, res) => {
 };
 
 const addArticle = async (req, res) => {
-    const { tutorialId } = req.query;
+    const { articleId } = req.query;
     const { id } = req.user;
 
-    if (!ObjectId.isValid(tutorialId)) return res.status(400).json({ error: "tutorialId is invalid" });
+    if (!ObjectId.isValid(articleId)) return res.status(400).json({ error: "articleId is invalid" });
 
     try {
-        const foundArticle = await Article.findById(tutorialId);
+        const foundArticle = await Article.findById(articleId);
         if (!foundArticle) return res.status(404).json({ error: "Article not found" });
 
         const user = await User.findById(id).select("-password");
         const { userType, email, name, phoneNumber, dateOfBirth, profileImageURL } = user;
-        const foundIndex = user.savedArticles.findIndex((tutorial) => tutorial == tutorialId);
+        const foundIndex = user.savedArticles.findIndex((article) => article == articleId);
         if (foundIndex == -1) {
-            user.savedArticles.push(tutorialId);
+            user.savedArticles.push(articleId);
             await user.save();
             const newToken = await createToken({
                 id,
@@ -164,7 +164,7 @@ const getSavedArticles = async (req, res) => {
 
     try {
         const user = await User.findById(id).select(["savedArticles"]).populate("savedArticles");
-        user.savedArticles.forEach((tutorial, i) => (user.savedArticles[i] = tutorial.transform()));
+        user.savedArticles.forEach((article, i) => (user.savedArticles[i] = article.transform()));
         return res.status(200).json(user.savedArticles);
     } catch (error) {
         return res.status(500).json(error);

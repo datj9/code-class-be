@@ -42,7 +42,7 @@ UserSchema.method("transform", function () {
     delete obj.__v;
     delete obj.password;
     delete obj.tasks;
-    delete obj.savedTutorials;
+    delete obj.savedArticles;
 
     return obj;
 });
