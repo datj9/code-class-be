@@ -27,7 +27,7 @@ const UserSchema = new mongoose.Schema({
         default: "client",
     },
     profileImageURL: String,
-    savedTutorials: [{ type: mongoose.Types.ObjectId, ref: "Tutorial" }],
+    savedArticles: [{ type: mongoose.Types.ObjectId, ref: "Article" }],
     tasks: {
         type: [TaskSchema],
         default: [],

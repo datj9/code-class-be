@@ -5,7 +5,7 @@ const { authenticate, authorize, checkToken } = require("../../../middlewares/au
 const { uploadSingleImage } = require("../../../middlewares/upload");
 
 router.get("/", articleController.getArticles);
-router.get("/:article", checkToken, articleController.getArticleById);
+router.get("/:articleId", checkToken, articleController.getArticleById);
 router.post("/upload-image", authenticate, authorize(["admin"]), uploadSingleImage);
 router.post("/", authenticate, authorize(["admin"]), articleController.createArticle);
 router.put("/:articleId", authenticate, authorize(["admin"]), articleController.updateArticle);
