@@ -5,28 +5,29 @@ const isURL = require("validator/lib/isURL");
 const ObjectId = require("mongoose").Types.ObjectId;
 const isInt = require("validator/lib/isInt");
 const isIP = require("validator/lib/isIP");
+const { Technology } = require("../../../models/Technology");
 
 const getArticles = async (req, res) => {
     let articles;
     let total;
-    const { pageSize, pageIndex, tags: tagsReq, sortBy, orderBy } = req.query;
+    const { pageSize, pageIndex, technologies: technologiesReq, sortBy, orderBy } = req.query;
     const limit = isInt(pageSize + "") ? parseInt(pageSize) : 8;
     const skip = isInt(pageIndex + "") ? (pageIndex - 1) * limit : 0;
     const sort = ["createdAt", "views", "difficultyLevel"].includes(sortBy) ? sortBy : "createdAt";
     const order = orderBy == 1 || orderBy == -1 ? parseInt(orderBy) : -1;
-    let tags;
+    let technologies;
     try {
-        tags = Array.isArray(JSON.parse(tagsReq)) ? JSON.parse(tagsReq) : undefined;
+        technologies = Array.isArray(JSON.parse(technologiesReq)) ? JSON.parse(technologiesReq) : undefined;
     } catch (error) {}
 
     try {
-        if (tags && tags.length > 0) {
-            articles = await Article.find({ tags: { $in: tags } })
+        if (technologies && technologies.length > 0) {
+            articles = await Article.find({ technologies: { $in: technologies } })
                 .sort([[sort, order]])
                 .skip(skip)
                 .limit(limit)
                 .select("-content");
-            total = await Article.countDocuments({ tags: { $in: tags } });
+            total = await Article.countDocuments({ technologies: { $in: technologies } });
         } else {
             articles = await Article.find()
                 .sort([[sort, order]])
@@ -65,17 +66,30 @@ const getArticleById = async (req, res) => {
 };
 
 const createArticle = async (req, res) => {
-    const { title, description, thumbnailUrl, content, difficultyLevel, readingTime, tags } = req.body;
-    const regExpTestTags = new RegExp("React|Vue|Angular|JavaScript|TypeScript|NodeJS|Java");
+    const {
+        title,
+        description,
+        thumbnailUrl,
+        content,
+        difficultyLevel,
+        readingTime,
+        technologies,
+        isTutorial,
+    } = req.body;
     const errors = {};
+    const requiredFields = [
+        "title",
+        "description",
+        "thumbnailUrl",
+        "content",
+        "technologies",
+        "difficultyLevel",
+        "readingTime",
+    ];
 
-    if (!title) errors.title = "title is required";
-    if (!description) errors.description = "description is required";
-    if (!thumbnailUrl) errors.thumbnailUrl = "thumbnailUrl is required";
-    if (!content) errors.content = "content is required";
-    if (!tags) errors.tags = "tags is required";
-    if (!difficultyLevel) errors.difficultyLevel = "difficultyLevel is required";
-    if (!readingTime) errors.readingTime = "readingTime is required";
+    requiredFields.forEach((field) => {
+        if (!req.body[field]) errors.field = `${field} is required`;
+    });
     if (Object.keys(errors).length > 0) return res.status(400).json(errors);
 
     if (typeof title != "string") errors.title = "title is invalid";
@@ -91,24 +105,25 @@ const createArticle = async (req, res) => {
         errors.difficultyLevel = "difficultyLevel is invalid";
     }
     if (typeof readingTime != "number" || readingTime < 1) errors.readingTime = "readingTime is invalid";
-    if (!Array.isArray(tags)) errors.tags = "tags is invalid";
+    if (!Array.isArray(technologies)) errors.technologies = "technologies is invalid";
+    if (isTutorial && typeof isTutorial != "boolean") errors.isTutorial = "isTutorial is invalid";
     if (Object.keys(errors).length > 0) return res.status(400).json(errors);
 
-    regExpTestTags.forEach((tag) => {
-        if (regExpTestTags.test(tag) == false) return res.status(400).json({ tags: "tags is invalid" });
-    });
-
-    const newArticle = new Article({
-        title,
-        description,
-        thumbnailUrl,
-        content,
-        difficultyLevel,
-        readingTime,
-        tags,
-    });
-
     try {
+        const foundTechs = await Technology.find({ _id: { $in: technologies } });
+        if (foundTechs.length === 0) return res.status(400).json({ technologies: "technologies not found" });
+
+        const newArticle = new Article({
+            title,
+            description,
+            thumbnailUrl,
+            content,
+            difficultyLevel,
+            readingTime,
+            technologies,
+            isTutorial,
+        });
+
         await newArticle.save();
         return res.status(201).json(newArticle.transform());
     } catch (error) {
@@ -117,17 +132,31 @@ const createArticle = async (req, res) => {
 };
 
 const updateArticle = async (req, res) => {
-    const { title, description, thumbnailUrl, content, difficultyLevel, readingTime, tags } = req.body;
+    const {
+        title,
+        description,
+        thumbnailUrl,
+        content,
+        difficultyLevel,
+        readingTime,
+        technologies,
+        isTutorial,
+    } = req.body;
     const { articleId } = req.params;
     const errors = {};
+    const requiredFields = [
+        "title",
+        "description",
+        "thumbnailUrl",
+        "content",
+        "technologies",
+        "difficultyLevel",
+        "readingTime",
+    ];
 
-    if (!title) errors.title = "title is required";
-    if (!description) errors.description = "description is required";
-    if (!thumbnailUrl) errors.thumbnailUrl = "thumbnailUrl is required";
-    if (!content) errors.content = "content is required";
-    if (!difficultyLevel) errors.difficultyLevel = "difficultyLevel is required";
-    if (!readingTime) errors.readingTime = "readingTime is required";
-    if (!tags) errors.tags = "tags is required";
+    requiredFields.forEach((field) => {
+        if (!req.body[field]) errors.field = `${field} is required`;
+    });
     if (Object.keys(errors).length > 0) return res.status(400).json(errors);
 
     if (typeof title != "string") errors.title = "title is invalid";
@@ -143,15 +172,19 @@ const updateArticle = async (req, res) => {
         errors.difficultyLevel = "difficultyLevel is invalid";
     }
     if (typeof readingTime != "number" || readingTime < 1) errors.readingTime = "readingTime is invalid";
-    if (!Array.isArray(tags)) errors.tags = "tags is invalid";
+    if (!Array.isArray(technologies)) errors.technologies = "technologies is invalid";
+    if (isTutorial && typeof isTutorial != "boolean") errors.isTutorial = "isTutorial is invalid";
     if (Object.keys(errors).length > 0) return res.status(400).json(errors);
 
     try {
+        const foundTechs = await Technology.find({ _id: { $in: technologies } });
+        if (foundTechs.length === 0) return res.status(400).json({ technologies: "technologies not found" });
+
         const foundArticle = await Article.findById(articleId);
         if (!foundArticle) return res.status(404).json({ error: "Article not found" });
         const article = await Article.findOneAndUpdate(
             { _id: articleId },
-            { title, description, thumbnailUrl, content, difficultyLevel, readingTime, tags }
+            { title, description, thumbnailUrl, content, difficultyLevel, readingTime, technologies }
         );
         return res.status(200).json(article.transform());
     } catch (error) {
